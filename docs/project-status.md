@@ -34,15 +34,27 @@
 
 ## Milestone 6: Completion ✅ COMPLETE
 - ComparisonPage.tsx — dedicated paper comparison UI with pairwise scores, evidence excerpts, progress bars
-- CollectionsPage.tsx — full collections CRUD with paper management
+- CollectionsPage.tsx — full collections CRUD with paper management + Analysis tab (keywords, domains, year chart)
 - Persistent conversations — ai_conversations + ai_messages DB tables, history sidebar in AssistantPage
 - DOCX export — python-docx integration in reports.py (PDF/DOCX/CSV/JSON/BibTeX)
 - BibTeX export — academic citation format generation
 - Analytics filters — year_from, year_to, source, domain query params on /api/analytics
+- SavedSearch model + /api/saved-searches CRUD (save, list, delete)
+- PaperTag model + /api/tags system (add, remove, list, by-tag, paper-tags)
+- ExplorePage — saved searches dropdown (clock icon), "Save search" button after results
+- /api/auth/change-password — verified with correct cross-session DB handling
+- /api/auth/request-reset + /api/auth/confirm-reset — token-based password reset
+- /api/search — author and year filter params
+- /api/documents/search — full-text search within user uploads
+- /api/collections/{id}/analyze — keyword/domain/year analysis for any collection
+- CSS variable theme system — --bg/--surface/--surface-active aliases for dark/light mode
+- ThemeContext + AppLayout theme toggle (localStorage-persisted dark/light mode)
+- SettingsPage — Appearance section + Change Password form
+- LibraryPage — smart tags (add/remove inline), PDF preview panel, Document Search tab
+- 21 new tests in test_milestone6b.py (tags, saved searches, password, collection analysis)
 - conftest.py updated to include all new models for test isolation
-- 20 new Milestone 6 tests (collections, conversations, export formats, analytics filters)
 - TypeScript: 0 errors, Vite build: success
-- **58/58 pytest tests passing**
+- **79/79 pytest tests passing**
 
 ---
 
@@ -57,7 +69,7 @@
 
 ### Test results
 ```
-58 passed (38 original + 20 new Milestone 6)
+79 passed (38 original + 20 Milestone 6 + 21 Milestone 6b)
 ```
 
 ### End-to-end verification (latest)
@@ -74,6 +86,11 @@
 - ✅ Recommendations
 - ✅ Report generation (PDF/DOCX/CSV/JSON/BibTeX)
 - ✅ Documents endpoint
+- ✅ Saved searches (save, load, delete from Explore page)
+- ✅ Smart tags on library papers (add/remove inline)
+- ✅ Collection analysis (keywords, domains, year chart)
+- ✅ Password change from Settings page
+- ✅ Light/dark theme toggle (persisted in localStorage)
 - ✅ TypeScript: no errors
 - ✅ Vite build: success
 
@@ -110,9 +127,23 @@
 | /api/collections/{id} | DELETE | ✅ | Delete collection |
 | /api/collections/{id}/papers | POST | ✅ | Add paper to collection |
 | /api/collections/{id}/papers/{pid} | DELETE | ✅ | Remove paper from collection |
-| /api/documents | GET | ✅ | List uploads |
+| /api/collections/{id}/analyze | GET | ✅ | Keyword/domain/year analysis for collection |
+| /api/saved-searches | GET | ✅ | List saved searches |
+| /api/saved-searches | POST | ✅ | Save search query |
+| /api/saved-searches/{id} | DELETE | ✅ | Delete saved search |
+| /api/tags | GET | ✅ | List all user tags |
+| /api/tags | POST | ✅ | Add tag to paper |
+| /api/tags | DELETE | ✅ | Remove tag from paper |
+| /api/tags/paper/{id} | GET | ✅ | Tags for specific paper |
+| /api/tags/by-tag/{tag} | GET | ✅ | Papers with given tag |
+| /api/auth/change-password | POST | ✅ | Change password (logged-in) |
+| /api/auth/request-reset | POST | ❌ | Request password reset token |
+| /api/auth/confirm-reset | POST | ❌ | Confirm password reset with token |
+| /api/documents | GET | ✅ | List uploads (filterable by ?q=) |
+| /api/documents/search | GET | ✅ | Full-text search across uploads |
 | /api/documents/upload | POST | ✅ | Upload PDF |
 | /api/documents/{id} | DELETE | ✅ | Delete upload |
+| /api/documents/{id}/file | GET | ✅ | Serve raw PDF file |
 | /api/recommendations | GET | ✅ | Recommended papers |
 | /api/reports | GET | ✅ | List reports |
 | /api/reports/generate | POST | ✅ | Generate PDF/DOCX/CSV/JSON/BibTeX |
@@ -135,6 +166,8 @@
 | paper_embeddings | 384-dim float32 vectors for semantic search |
 | document_chunks | Text chunks for RAG retrieval |
 | reports | Generated report metadata + file paths |
+| saved_searches | User-saved search queries |
+| paper_tags | User-assigned tags on saved papers |
 
 ---
 
@@ -174,9 +207,15 @@
 - [x] Persistent conversation storage (ai_conversations + ai_messages)
 - [x] DOCX + BibTeX export formats
 - [x] Analytics filters (year range, source)
+- [x] Saved searches (save/load/delete)
+- [x] Smart tags on library papers
+- [x] Collection analysis tab (keywords, domains, years)
+- [x] Password change from Settings
+- [x] Light/dark theme toggle with localStorage persistence
+- [x] CSS variable theme system (dark default + light toggle)
 - [x] SRS.md documentation
 - [x] Professional README.md
-- [x] 58 pytest tests passing
+- [x] 79 pytest tests passing
 - [x] TypeScript: 0 errors
 - [x] Vite production build: success
 - [x] End-to-end project verification
