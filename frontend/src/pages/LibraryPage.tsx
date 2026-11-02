@@ -55,6 +55,19 @@ export default function LibraryPage() {
       .finally(() => setLoadingUploads(false))
   }, [tab, token])
 
+  // Poll every 3 s while any document is pending/processing
+  useEffect(() => {
+    if (tab !== 'uploads' || !token) return
+    const hasInProgress = uploads.some((d) => d.status === 'pending' || d.status === 'processing')
+    if (!hasInProgress) return
+    const timer = setInterval(() => {
+      api.get<UploadedDocument[]>('/api/documents', token)
+        .then((fresh) => setUploads(fresh))
+        .catch(() => {})
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [tab, token, uploads])
+
   const handleRemoveSaved = async (paperId: number | undefined) => {
     if (!paperId || !token) return
     try {

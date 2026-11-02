@@ -46,10 +46,23 @@ def _extract_authors_from_text(text: str) -> str | None:
     return None
 
 
+def _chunk_text(text: str, chunk_size: int = 400, overlap: int = 80) -> list[str]:
+    """Split text into overlapping chunks."""
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunks.append(text[start:end])
+        start += chunk_size - overlap
+    return [c for c in chunks if c.strip()]
+
+
 def _process_pdf_extraction(doc_id: int, file_path: str, db_url: str) -> None:
-    """Background task: extract text from PDF using PyMuPDF."""
+    """Background task: extract text from PDF using PyMuPDF, then create DocumentChunks."""
+    from datetime import datetime as dt
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+    from app.models.embedding import DocumentChunk
 
     engine = create_engine(db_url)
     SessionLocal = sessionmaker(bind=engine)
@@ -64,11 +77,17 @@ def _process_pdf_extraction(doc_id: int, file_path: str, db_url: str) -> None:
         db.commit()
 
         try:
-            import fitz  # PyMuPDF
+            try:
+                import pymupdf as fitz  # PyMuPDF ≥ 1.24
+            except ImportError:
+                import fitz  # PyMuPDF < 1.24 fallback
             pdf = fitz.open(file_path)
-            text_parts = []
-            for page in pdf:
-                text_parts.append(page.get_text())
+            text_parts: list[str] = []
+            page_texts: list[tuple[int, str]] = []   # (page_number, text)
+            for i, page in enumerate(pdf, start=1):
+                t = page.get_text()
+                text_parts.append(t)
+                page_texts.append((i, t))
             pdf.close()
             full_text = "\n".join(text_parts)
 
@@ -77,14 +96,38 @@ def _process_pdf_extraction(doc_id: int, file_path: str, db_url: str) -> None:
                 db.commit()
                 return
 
+            # Extract metadata heuristics
             title = _extract_title_from_text(full_text)
             authors = _extract_authors_from_text(full_text)
             doc.extracted_title = title
             doc.extracted_authors = authors
+
+            # Delete old chunks if re-processing
+            db.query(DocumentChunk).filter_by(document_id=doc_id).delete()
+            db.commit()
+
+            # Build chunks per page so we preserve page numbers
+            chunk_index = 0
+            for page_num, page_text in page_texts:
+                if not page_text.strip():
+                    continue
+                for chunk_text in _chunk_text(page_text):
+                    db.add(DocumentChunk(
+                        document_id=doc_id,
+                        paper_id=doc.paper_id,
+                        chunk_index=chunk_index,
+                        chunk_text=chunk_text,
+                        page_number=page_num,
+                        source_type="pdf",
+                        created_at=dt.utcnow(),
+                    ))
+                    chunk_index += 1
+
             doc.status = "completed"
 
-        except Exception:
+        except Exception as exc:
             doc.status = "failed"
+            print(f"[PDF extraction] doc_id={doc_id} failed: {exc}")
 
         db.commit()
     finally:
