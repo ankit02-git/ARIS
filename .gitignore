@@ -1,0 +1,50 @@
+﻿# Python
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+backend/**/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+
+# Environment
+backend/.env
+.env
+
+# Storage (user data, generated files - never commit these)
+backend/storage/uploads/
+backend/storage/reports/
+backend/storage/cache/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Build
+frontend/node_modules/.tmp/
+
+# Tests
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Large model files
+*.gguf
+*.bin
+*.safetensors
+
+# Bob AI tool artifacts
+.bob/
+
+# IDE
+.vscode/
+.idea/
