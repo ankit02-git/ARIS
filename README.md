@@ -29,36 +29,39 @@ ARIS is a full-stack academic research intelligence platform that collects, anal
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    React Frontend                        │
-│   Vite + TypeScript + Tailwind + Recharts + shadcn/ui   │
-│   10 pages: Dashboard, Explore, Assistant, Analysis,    │
-│   Comparison, Collections, Library, Reports, Recs,      │
-│   Settings                                               │
-└────────────────────────┬────────────────────────────────┘
-                         │ HTTP / REST (port 8001)
-┌────────────────────────▼────────────────────────────────┐
-│                  FastAPI Backend                         │
-│   Python 3.12 · SQLAlchemy 2 · Pydantic · Alembic       │
-│   JWT Auth · Argon2 · Background tasks                  │
-├──────────┬──────────────────────┬───────────────────────┤
-│ Academic │   Document           │   AI / ML             │
-│ Sources  │   Intelligence       │   Services            │
-│ arXiv    │   PyMuPDF extraction │   sentence-transformers│
-│ Semantic │   Section parsing    │   all-MiniLM-L6-v2    │
-│ Scholar  │   Chunk generation   │   FAISS vector index  │
-│ Crossref │   Embedding storage  │   Ollama (llama3.2)   │
-│ PubMed   │                      │   LangChain RAG       │
-└──────────┴──────────┬───────────┴───────────────────────┘
-                      │
-┌─────────────────────▼───────────────────────────────────┐
-│               PostgreSQL Database                        │
-│  users · research_papers · saved_papers                 │
-│  uploaded_documents · collections · collection_papers   │
-│  ai_conversations · ai_messages · paper_embeddings      │
-│  document_chunks · reports · processing logs            │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                   React SPA  (:5173)                      │
+│  Vite · TypeScript · React Router v7 · Recharts           │
+│  10 pages: Dashboard, Explore, Library, Analysis,         │
+│  Comparison, Collections, Assistant, Reports, Recs,       │
+│  Settings                                                  │
+└─────────────────────────┬────────────────────────────────┘
+                          │ HTTP REST · Bearer JWT
+┌─────────────────────────▼────────────────────────────────┐
+│                FastAPI Backend  (:8001)                    │
+│  Python 3.12 · SQLAlchemy 2 · Pydantic v2 · Alembic       │
+│  17 route modules · JWT deps · BackgroundTasks            │
+├───────────────┬──────────────────────┬────────────────────┤
+│ Academic APIs │  Document Intel      │  AI / ML           │
+│ arXiv         │  PyMuPDF extraction  │  all-MiniLM-L6-v2  │
+│ Semantic      │  Section parsing     │  FAISS IndexFlatIP │
+│ Scholar       │  Chunk generation    │  Ollama llama3.2   │
+│ Crossref      │  Embedding queue     │  RAG pipeline      │
+│ PubMed        │  Full-text search    │  Gap engine        │
+└───────────────┴──────────┬───────────┴────────────────────┘
+                           │
+┌──────────────────────────▼───────────────────────────────┐
+│                PostgreSQL 16  (:5432)                     │
+│  13 tables · FK constraints with CASCADE                  │
+│  users · research_papers · saved_papers                   │
+│  uploaded_documents · collections · collection_papers     │
+│  ai_conversations · ai_messages · paper_embeddings        │
+│  document_chunks · reports · saved_searches · paper_tags  │
+└───────────────────────────────────────────────────────────┘
 ```
+
+> 📐 **Full architecture reference:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+> Includes ER diagram, component tree, RAG pipeline flowchart, security model, and all data flows.
 
 ---
 
