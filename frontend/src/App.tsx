@@ -14,6 +14,7 @@ import ReportsPage from './pages/ReportsPage'
 import SettingsPage from './pages/SettingsPage'
 import ComparisonPage from './pages/ComparisonPage'
 import CollectionsPage from './pages/CollectionsPage'
+import DocumentAnalysisPage from './pages/DocumentAnalysisPage'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token, loading } = useAuth()
@@ -56,6 +57,7 @@ function AppRoutes() {
         <Route path="/library" element={<LibraryPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/document-analysis/:id" element={<DocumentAnalysisPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

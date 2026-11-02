@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
 import type { Paper, UploadedDocument } from '../types'
-import { Bookmark, Trash2, Upload, FileText, ExternalLink, Loader2, CheckCircle, XCircle, Clock, Tag, Eye, EyeOff, Search } from 'lucide-react'
+import { Bookmark, Trash2, Upload, FileText, ExternalLink, Loader2, CheckCircle, XCircle, Clock, Tag, Eye, EyeOff, Search, BarChart2 } from 'lucide-react'
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
 type Tab = 'saved' | 'uploads' | 'search-docs'
 
@@ -422,6 +423,7 @@ function UploadRow({ doc, isPreview, onDelete, onPreview }: {
   onDelete: (id: number) => void
   onPreview: (doc: UploadedDocument | null) => void
 }) {
+  const navigate = useNavigate()
   const statusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
     pending: { color: 'var(--amber)', icon: <Clock size={14} />, label: 'Pending' },
     processing: { color: 'var(--accent)', icon: <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />, label: 'Processing' },
@@ -448,6 +450,15 @@ function UploadRow({ doc, isPreview, onDelete, onPreview }: {
         </div>
       </div>
       <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+        {doc.status === 'completed' && (
+          <button
+            onClick={() => navigate(`/document-analysis/${doc.id}`)}
+            title="Analyse PDF — charts & summary"
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', fontSize: 12 }}
+          >
+            <BarChart2 size={13} /> Analyse
+          </button>
+        )}
         <button
           onClick={() => onPreview(isPreview ? null : doc)}
           title={isPreview ? 'Close preview' : 'Preview PDF'}

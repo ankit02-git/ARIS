@@ -314,3 +314,122 @@ def _doc_out(doc: UploadedDocument) -> dict:
         "extracted_title": doc.extracted_title,
         "extracted_authors": doc.extracted_authors,
     }
+
+
+@router.get("/{doc_id}/analysis")
+def analyse_document(
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Return keyword frequencies, page distribution, top sentences and stats for an uploaded PDF."""
+    import re as _re
+    from collections import Counter
+
+    doc = db.query(UploadedDocument).filter_by(id=doc_id, user_id=current_user.id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if doc.status != "completed":
+        raise HTTPException(status_code=400, detail="Document extraction not completed yet")
+
+    from app.models.embedding import DocumentChunk
+    chunks = db.query(DocumentChunk).filter_by(document_id=doc_id).order_by(DocumentChunk.chunk_index).all()
+    if not chunks:
+        raise HTTPException(status_code=400, detail="No text chunks found. Re-upload the document.")
+
+    # --- Full text assembly ---
+    full_text = " ".join(c.chunk_text for c in chunks)
+    words_all = _re.findall(r"\b[a-zA-Z]{3,}\b", full_text.lower())
+    total_words = len(words_all)
+    total_chunks = len(chunks)
+    page_numbers = [c.page_number for c in chunks if c.page_number]
+    total_pages = max(page_numbers) if page_numbers else 0
+
+    # --- Stop-word removal ---
+    STOPWORDS = {
+        "the","and","for","with","this","that","from","are","was","were","have","has","been","which",
+        "they","their","there","into","also","such","can","its","more","will","but","not","any","all",
+        "our","these","about","than","when","some","each","most","may","use","used","using","based",
+        "two","one","new","paper","show","shows","propose","proposed","however","while","between",
+        "both","other","data","results","research","approach","methods","method","model","models",
+        "learning","deep","neural","network","networks","system","systems","different","study",
+        "studies","work","works","high","low","large","small","number","set","using","present",
+        "through","show","found","significant","analysis","propose","task","approach","training",
+        "test","performance","evaluation","dataset","datasets","feature","features","attention",
+        "human","recognition","emotion","emotions","facial","expression","expressions","affective",
+    }
+    filtered = [w for w in words_all if w not in STOPWORDS and len(w) > 3]
+
+    # --- Keyword frequencies (top 20) ---
+    kw_counter = Counter(filtered)
+    top_keywords = [{"keyword": w, "count": c} for w, c in kw_counter.most_common(20)]
+
+    # --- Page-wise chunk/word distribution ---
+    page_counter: Counter = Counter()
+    page_words: Counter = Counter()
+    for chunk in chunks:
+        pn = chunk.page_number or 0
+        page_counter[pn] += 1
+        page_words[pn] += len(_re.findall(r"\b\w+\b", chunk.chunk_text))
+    page_distribution = [
+        {"page": p, "chunks": page_counter[p], "words": page_words[p]}
+        for p in sorted(page_counter)
+        if p > 0
+    ][:50]   # cap at 50 pages for chart readability
+
+    # --- Section distribution (from section_heading column) ---
+    section_counter: Counter = Counter()
+    for chunk in chunks:
+        heading = (chunk.section_heading or "").strip()
+        if heading:
+            section_counter[heading] += 1
+        else:
+            section_counter["(unlabelled)"] += 1
+    section_distribution = [
+        {"section": s, "count": c}
+        for s, c in section_counter.most_common(10)
+    ]
+
+    # --- Top key sentences (longest, most informative chunks) ---
+    def _sentence_score(text: str) -> float:
+        words = _re.findall(r"\b[a-zA-Z]{4,}\b", text.lower())
+        unique = len(set(words))
+        return unique / max(len(words), 1) * len(words)
+
+    scored = sorted(chunks, key=lambda c: _sentence_score(c.chunk_text), reverse=True)
+    top_sentences = []
+    seen_starts: set[str] = set()
+    for chunk in scored:
+        start = chunk.chunk_text[:40]
+        if start in seen_starts:
+            continue
+        seen_starts.add(start)
+        # Pick first full sentence from chunk
+        sentences = _re.split(r"(?<=[.!?])\s+", chunk.chunk_text.strip())
+        best = max(sentences, key=len) if sentences else chunk.chunk_text
+        best = best.strip()
+        if len(best) > 60:
+            top_sentences.append({
+                "text": best[:300],
+                "page": chunk.page_number,
+                "section": chunk.section_heading or None,
+            })
+        if len(top_sentences) >= 8:
+            break
+
+    return {
+        "document_id": doc_id,
+        "original_filename": doc.original_filename,
+        "extracted_title": doc.extracted_title,
+        "extracted_authors": doc.extracted_authors,
+        "stats": {
+            "total_pages": total_pages,
+            "total_chunks": total_chunks,
+            "total_words": total_words,
+            "unique_keywords": len(kw_counter),
+        },
+        "top_keywords": top_keywords,
+        "page_distribution": page_distribution,
+        "section_distribution": section_distribution,
+        "top_sentences": top_sentences,
+    }
