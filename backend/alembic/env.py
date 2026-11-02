@@ -7,6 +7,13 @@ from app.core.config import settings
 from app.db.base import Base
 from app.models.paper import ResearchPaper, SavedPaper  # noqa: F401
 from app.models.user import User  # noqa: F401
+from app.models.document import UploadedDocument  # noqa: F401
+from app.models.collection import Collection, CollectionPaper  # noqa: F401
+from app.models.conversation import Conversation, ConversationMessage  # noqa: F401
+from app.models.embedding import PaperEmbedding, DocumentChunk  # noqa: F401
+from app.models.report import Report  # noqa: F401
+from app.models.saved_search import SavedSearch  # noqa: F401
+from app.models.tag import PaperTag  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))

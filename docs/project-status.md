@@ -220,7 +220,7 @@
 - [x] Vite production build: success
 - [x] End-to-end project verification
 - [ ] GitHub publish (awaiting developer authorization)
-- [ ] Alembic migration scripts for all new models
+- [x] Alembic migration scripts for all new models
 - [ ] pgvector persistent index (future enhancement)
 
 ---
