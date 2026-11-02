@@ -200,3 +200,87 @@ def remove_paper_from_collection(
     db.commit()
     count = db.query(CollectionPaper).filter_by(collection_id=col.id).count()
     return _collection_out(col, count)
+
+
+@router.get("/{collection_id}/analyze")
+def analyze_collection(
+    collection_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Run keyword, domain, and gap analysis on papers in a specific collection."""
+    import re
+    from collections import Counter
+
+    col = db.query(Collection).filter_by(id=collection_id, user_id=current_user.id).first()
+    if not col:
+        raise HTTPException(status_code=404, detail="Collection not found")
+
+    cp_entries = db.query(CollectionPaper).filter_by(collection_id=col.id).all()
+    paper_ids = [cp.paper_id for cp in cp_entries]
+
+    if not paper_ids:
+        return {
+            "collection": _collection_out(col, 0),
+            "total_papers": 0,
+            "top_keywords": [],
+            "domain_distribution": [],
+            "publications_by_year": [],
+            "summary": "This collection has no papers yet.",
+        }
+
+    from app.models.paper import ResearchPaper
+
+    papers = db.query(ResearchPaper).filter(ResearchPaper.id.in_(paper_ids)).all()
+
+    STOP_WORDS = {
+        "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
+        "of", "with", "by", "from", "is", "are", "was", "were", "be", "been",
+        "using", "based", "this", "that", "we", "our", "paper", "study", "show",
+        "proposed", "approach", "method", "model", "data", "results", "two",
+    }
+    AFFECTIVE_DOMAINS = {
+        "Emotion Recognition": ["emotion recogni", "emotion detect"],
+        "Facial Expression": ["facial expression", "face expression"],
+        "Speech Emotion": ["speech emotion", "vocal emotion", "audio emotion"],
+        "Sentiment Analysis": ["sentiment analy", "opinion mining"],
+        "Stress Detection": ["stress detect", "stress recogni"],
+        "Multimodal": ["multimodal", "multi-modal", "fusion"],
+        "Physiological": ["physiological", "eeg", "ecg", "emg", "heart rate"],
+        "HCI": ["human-computer", "hci", "user interface", "affective computing"],
+        "Healthcare": ["healthcare", "clinical", "medical", "patient"],
+        "Education": ["education", "e-learning", "student", "learning"],
+    }
+
+    all_text = " ".join(f"{p.title or ''} {p.abstract or ''}" for p in papers)
+    words = re.findall(r'\b[a-z][a-z-]{2,}\b', all_text.lower())
+    filtered = [w for w in words if w not in STOP_WORDS and len(w) > 3]
+    kw_counts: Counter = Counter(filtered)
+    top_keywords = [{"keyword": kw, "count": cnt} for kw, cnt in kw_counts.most_common(15)]
+
+    domain_counts: Counter = Counter()
+    for p in papers:
+        text = f"{p.title or ''} {p.abstract or ''}".lower()
+        for domain, patterns in AFFECTIVE_DOMAINS.items():
+            if any(pat in text for pat in patterns):
+                domain_counts[domain] += 1
+    domain_distribution = [{"domain": d, "count": c} for d, c in domain_counts.most_common()]
+
+    year_counts: Counter = Counter(p.publication_year for p in papers if p.publication_year)
+    publications_by_year = [{"year": yr, "count": year_counts[yr]} for yr in sorted(year_counts)]
+
+    dominant_domains = [d["domain"] for d in domain_distribution[:3]]
+    summary = (
+        f"This collection contains {len(papers)} paper{'s' if len(papers) != 1 else ''}. "
+        f"Top research areas: {', '.join(dominant_domains) if dominant_domains else 'general affective computing'}. "
+        f"Most frequent keyword: {top_keywords[0]['keyword'] if top_keywords else 'N/A'}."
+    )
+
+    return {
+        "collection": _collection_out(col, len(papers)),
+        "total_papers": len(papers),
+        "top_keywords": top_keywords,
+        "domain_distribution": domain_distribution,
+        "publications_by_year": publications_by_year,
+        "summary": summary,
+    }

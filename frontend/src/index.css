@@ -3,7 +3,6 @@ html, body, #root {
   min-height: 100%;
   min-width: 100%;
   font-family: Inter, 'Segoe UI', sans-serif;
-  background: #0f172a;
 }
 
 * {
@@ -12,17 +11,69 @@ html, body, #root {
 
 body {
   min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  transition: background 0.2s, color 0.2s;
 }
 
-button,
-input {
+button, input {
   font: inherit;
 }
 
-h1,
-h2,
-h3,
-h4,
-p {
+h1, h2, h3, h4, p {
   margin: 0;
+}
+
+/* ── Dark theme (default) ── */
+:root {
+  --bg-base:        #0f172a;
+  --bg-surface:     #0b1120;
+  --bg-elevated:    #1e293b;
+  --bg-hover:       #1e2d4a;
+  --border:         #1e293b;
+  --border-subtle:  #0f172a;
+  --text-primary:   #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted:     #94a3b8;
+  --text-faint:     #64748b;
+  --text-dim:       #475569;
+  --accent:         #3b82f6;
+  --accent-hover:   #2563eb;
+  --accent-muted:   #1e3a5f;
+  --accent-text:    #93c5fd;
+  --purple:         #8b5cf6;
+  --green:          #10b981;
+  --amber:          #f59e0b;
+  --red:            #ef4444;
+  /* short-hand aliases used by newer components */
+  --bg:             #0f172a;
+  --surface:        #0b1120;
+  --surface-active: #1e2d4a;
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --bg-base:        #f8fafc;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #f1f5f9;
+  --bg-hover:       #e2e8f0;
+  --border:         #e2e8f0;
+  --border-subtle:  #f1f5f9;
+  --text-primary:   #0f172a;
+  --text-secondary: #1e293b;
+  --text-muted:     #475569;
+  --text-faint:     #64748b;
+  --text-dim:       #94a3b8;
+  --accent:         #2563eb;
+  --accent-hover:   #1d4ed8;
+  --accent-muted:   #dbeafe;
+  --accent-text:    #1d4ed8;
+  --purple:         #7c3aed;
+  --green:          #059669;
+  --amber:          #d97706;
+  --red:            #dc2626;
+  /* short-hand aliases */
+  --bg:             #f8fafc;
+  --surface:        #ffffff;
+  --surface-active: #e2e8f0;
 }

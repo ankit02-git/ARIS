@@ -16,6 +16,8 @@ def search_papers(
     q: str = Query(..., min_length=2, description="A research topic or keyword"),
     limit: int = Query(20, ge=1, le=50),
     mode: str = Query("hybrid", description="Search mode: external | semantic | hybrid"),
+    author: str | None = Query(None, description="Filter results by author name"),
+    year: int | None = Query(None, description="Filter results by publication year"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> SearchResponse:
@@ -25,16 +27,12 @@ def search_papers(
     query = q.strip()
 
     if mode == "semantic":
-        # Semantic search over stored papers only
         results = _semantic_search_db(query, limit, db)
         if not results:
-            # Fall through to external if nothing in DB
             results = search_academic_papers(query, limit=limit)
     elif mode == "hybrid":
-        # Combine external API results + semantic DB search
         external = search_academic_papers(query, limit=max(limit // 2, 5))
         semantic = _semantic_search_db(query, limit // 2, db)
-        # Merge, deduplicate by title
         seen = {r["title"].lower() for r in external}
         for r in semantic:
             if r["title"].lower() not in seen:
@@ -42,8 +40,16 @@ def search_papers(
                 seen.add(r["title"].lower())
         results = external[:limit]
     else:
-        # External only (default legacy mode)
         results = search_academic_papers(query, limit=limit)
+
+    # Apply author filter (post-fetch)
+    if author:
+        author_lower = author.lower()
+        results = [r for r in results if r.get("authors") and author_lower in r["authors"].lower()]
+
+    # Apply year filter (post-fetch)
+    if year:
+        results = [r for r in results if r.get("publication_year") == year]
 
     return SearchResponse(results=results, query=query, count=len(results))
 

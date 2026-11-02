@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 import {
   LayoutDashboard,
   Search,
@@ -13,6 +14,8 @@ import {
   Microscope,
   GitCompare,
   FolderOpen,
+  Sun,
+  Moon,
 } from 'lucide-react'
 
 const navItems = [
@@ -30,6 +33,7 @@ const navItems = [
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -38,13 +42,13 @@ export default function AppLayout() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#0f172a', color: '#e2e8f0' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-base)', color: 'var(--text-secondary)' }}>
       {/* Sidebar */}
       <aside style={{
         width: 240,
         minWidth: 240,
-        background: '#0b1120',
-        borderRight: '1px solid #1e293b',
+        background: 'var(--bg-surface)',
+        borderRight: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         padding: '20px 0',
@@ -55,22 +59,18 @@ export default function AppLayout() {
         zIndex: 10,
       }}>
         {/* Brand */}
-        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid #1e293b' }}>
+        <div style={{ padding: '0 20px 24px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-              borderRadius: 8,
-              width: 32,
-              height: 32,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              borderRadius: 8, width: 32, height: 32,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <Microscope size={18} color="#fff" />
             </div>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 16, color: '#f8fafc', letterSpacing: 0.5 }}>ARIS</div>
-              <div style={{ fontSize: 10, color: '#64748b', letterSpacing: 0.3 }}>Research Intelligence</div>
+              <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)', letterSpacing: 0.5 }}>ARIS</div>
+              <div style={{ fontSize: 10, color: 'var(--text-faint)', letterSpacing: 0.3 }}>Research Intelligence</div>
             </div>
           </div>
         </div>
@@ -82,18 +82,12 @@ export default function AppLayout() {
               key={to}
               to={to}
               style={({ isActive }) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '9px 12px',
-                borderRadius: 8,
-                marginBottom: 2,
-                color: isActive ? '#f8fafc' : '#94a3b8',
-                background: isActive ? '#1e293b' : 'transparent',
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: isActive ? 500 : 400,
-                transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 12px', borderRadius: 8, marginBottom: 2,
+                color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                background: isActive ? 'var(--bg-elevated)' : 'transparent',
+                textDecoration: 'none', fontSize: 14,
+                fontWeight: isActive ? 500 : 400, transition: 'all 0.15s',
               })}
             >
               <Icon size={16} />
@@ -102,27 +96,34 @@ export default function AppLayout() {
           ))}
         </nav>
 
-        {/* User + Logout */}
-        <div style={{ padding: '12px 20px', borderTop: '1px solid #1e293b' }}>
+        {/* Theme toggle + User + Logout */}
+        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border)' }}>
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+              background: 'none', border: 'none', color: 'var(--text-faint)',
+              cursor: 'pointer', fontSize: 13, padding: '6px 0', marginBottom: 8,
+            }}
+          >
+            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </button>
+
           {user && (
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#e2e8f0', marginBottom: 2 }}>{user.name}</div>
-              <div style={{ fontSize: 11, color: '#64748b', wordBreak: 'break-all' }}>{user.email}</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 2 }}>{user.name}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-faint)', wordBreak: 'break-all' }}>{user.email}</div>
             </div>
           )}
           <button
             onClick={handleLogout}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              background: 'none',
-              border: 'none',
-              color: '#64748b',
-              cursor: 'pointer',
-              fontSize: 13,
-              padding: '6px 0',
-              width: '100%',
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: 'none', border: 'none',
+              color: 'var(--text-faint)', cursor: 'pointer', fontSize: 13, padding: '6px 0', width: '100%',
             }}
           >
             <LogOut size={14} />
@@ -132,7 +133,7 @@ export default function AppLayout() {
       </aside>
 
       {/* Main content */}
-      <main style={{ flex: 1, marginLeft: 240, minHeight: '100vh', overflow: 'auto' }}>
+      <main style={{ flex: 1, marginLeft: 240, minHeight: '100vh', overflow: 'auto', background: 'var(--bg-base)' }}>
         <Outlet />
       </main>
     </div>

@@ -143,14 +143,101 @@ async def upload_document(
 def list_documents(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    q: str | None = None,
 ) -> list[dict]:
-    docs = (
+    query = (
         db.query(UploadedDocument)
         .filter_by(user_id=current_user.id)
-        .order_by(UploadedDocument.created_at.desc())
+    )
+    docs = query.order_by(UploadedDocument.created_at.desc()).all()
+
+    # Full-text search within extracted document content via DocumentChunks
+    if q and q.strip():
+        from app.models.embedding import DocumentChunk
+        q_lower = q.strip().lower()
+        # Get document IDs that have matching chunks
+        matching_doc_ids: set[int] = set()
+        for doc in docs:
+            chunks = (
+                db.query(DocumentChunk)
+                .filter_by(document_id=doc.id)
+                .all()
+            )
+            for chunk in chunks:
+                if chunk.chunk_text and q_lower in chunk.chunk_text.lower():
+                    matching_doc_ids.add(doc.id)
+                    break
+            # Also search extracted title/authors
+            if (doc.extracted_title and q_lower in doc.extracted_title.lower()) or \
+               (doc.original_filename and q_lower in doc.original_filename.lower()):
+                matching_doc_ids.add(doc.id)
+        docs = [d for d in docs if d.id in matching_doc_ids]
+
+    return [_doc_out(d) for d in docs]
+
+
+@router.get("/search")
+def search_within_documents(
+    q: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[dict]:
+    """Search within the text content of uploaded documents."""
+    from app.models.embedding import DocumentChunk
+    if not q.strip():
+        return []
+
+    q_lower = q.strip().lower()
+    docs = (
+        db.query(UploadedDocument)
+        .filter_by(user_id=current_user.id, status="completed")
         .all()
     )
-    return [_doc_out(d) for d in docs]
+    results = []
+    for doc in docs:
+        chunks = (
+            db.query(DocumentChunk)
+            .filter_by(document_id=doc.id)
+            .all()
+        )
+        matching_excerpts = []
+        for chunk in chunks:
+            if chunk.chunk_text and q_lower in chunk.chunk_text.lower():
+                # Find position and extract context
+                idx = chunk.chunk_text.lower().find(q_lower)
+                start = max(0, idx - 80)
+                end = min(len(chunk.chunk_text), idx + len(q_lower) + 80)
+                excerpt = chunk.chunk_text[start:end]
+                matching_excerpts.append({
+                    "page": chunk.page_number,
+                    "section": chunk.section_heading,
+                    "excerpt": excerpt,
+                })
+        if matching_excerpts:
+            results.append({
+                "document": _doc_out(doc),
+                "match_count": len(matching_excerpts),
+                "excerpts": matching_excerpts[:5],  # top 5 excerpts per doc
+            })
+
+    results.sort(key=lambda x: x["match_count"], reverse=True)
+    return results
+
+
+@router.get("/{doc_id}/file")
+def serve_document_file(
+    doc_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> FileResponse:
+    """Serve the raw PDF file for browser preview."""
+    from fastapi.responses import FileResponse
+    doc = db.query(UploadedDocument).filter_by(id=doc_id, user_id=current_user.id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if not doc.file_path or not os.path.isfile(doc.file_path):
+        raise HTTPException(status_code=404, detail="File not found on disk")
+    return FileResponse(doc.file_path, media_type="application/pdf", filename=doc.original_filename)
 
 
 @router.delete("/{doc_id}", status_code=status.HTTP_204_NO_CONTENT)

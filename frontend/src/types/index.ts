@@ -165,3 +165,32 @@ export interface Conversation {
   created_at: string
   message_count: number
 }
+
+export interface SavedSearch {
+  id: number
+  query: string
+  mode: string
+  result_count: number | null
+  created_at: string
+}
+
+export interface PaperTag {
+  paper_id: number
+  tag: string
+}
+
+export interface CollectionAnalysis {
+  collection: {
+    id: number
+    name: string
+    description?: string | null
+    paper_count: number
+    created_at: string
+    updated_at: string
+  }
+  total_papers: number
+  top_keywords: { keyword: string; count: number }[]
+  domain_distribution: { domain: string; count: number }[]
+  publications_by_year: { year: number; count: number }[]
+  summary: string
+}

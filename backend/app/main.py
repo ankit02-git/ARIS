@@ -15,7 +15,9 @@ from app.api.routes.insights import router as insights_router
 from app.api.routes.library import router as library_router
 from app.api.routes.recommendations import router as recommendations_router
 from app.api.routes.reports import router as reports_router
+from app.api.routes.saved_searches import router as saved_searches_router
 from app.api.routes.search import router as search_router
+from app.api.routes.tags import router as tags_router
 from app.db.base import Base
 from app.db.session import engine
 from app.core.config import settings
@@ -25,6 +27,8 @@ from app.models.document import UploadedDocument  # noqa: F401
 from app.models.embedding import DocumentChunk, PaperEmbedding  # noqa: F401
 from app.models.paper import ResearchPaper, SavedPaper  # noqa: F401
 from app.models.report import Report  # noqa: F401
+from app.models.saved_search import SavedSearch  # noqa: F401
+from app.models.tag import PaperTag  # noqa: F401
 from app.models.user import User  # noqa: F401
 
 app = FastAPI(title="ARIS API", version="1.0.0", docs_url="/docs")
@@ -62,6 +66,8 @@ app.include_router(conversations_router)
 app.include_router(documents_router)
 app.include_router(gaps_router)
 app.include_router(collections_router)
+app.include_router(saved_searches_router)
+app.include_router(tags_router)
 app.include_router(recommendations_router)
 app.include_router(reports_router)
 

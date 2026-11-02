@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
-import type { Paper, SearchResponse } from '../types'
-import { Search, Filter, Bookmark, BookmarkCheck, ExternalLink, Loader2 } from 'lucide-react'
+import type { Paper, SearchResponse, SavedSearch } from '../types'
+import { Search, Filter, Bookmark, BookmarkCheck, ExternalLink, Loader2, Clock, Trash2, Save } from 'lucide-react'
 
 const SOURCES = ['All', 'arXiv', 'Semantic Scholar', 'Crossref', 'PubMed']
 const YEARS = ['All years', '2024', '2023', '2022', '2021', '2020', '2019', '2018', 'Before 2018']
@@ -32,6 +32,11 @@ export default function ExplorePage() {
   const [limit, setLimit] = useState(20)
   const [showFilters, setShowFilters] = useState(false)
 
+  // Saved searches
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
+  const [showSavedSearches, setShowSavedSearches] = useState(false)
+  const [savingSearch, setSavingSearch] = useState(false)
+
   // Auto-search if q param present
   useEffect(() => {
     const q = searchParams.get('q')
@@ -49,6 +54,14 @@ export default function ExplorePage() {
         const ids = new Set(papers.map((p) => paperKey(p)))
         setSavedIds(ids)
       })
+      .catch(() => {})
+  }, [token])
+
+  // Load saved searches
+  useEffect(() => {
+    if (!token) return
+    api.get<SavedSearch[]>('/api/saved-searches', token)
+      .then(setSavedSearches)
       .catch(() => {})
   }, [token])
 
@@ -89,6 +102,44 @@ export default function ExplorePage() {
     }
   }
 
+  const handleSaveSearch = async () => {
+    if (!query.trim() || !token) return
+    setSavingSearch(true)
+    try {
+      const saved = await api.post<SavedSearch>(
+        '/api/saved-searches',
+        { query: query.trim(), mode: 'hybrid', result_count: results.length || null },
+        token,
+      )
+      setSavedSearches((prev) => {
+        if (prev.find((s) => s.id === saved.id)) return prev
+        return [saved, ...prev]
+      })
+      setMessage('Search saved.')
+      setTimeout(() => setMessage(''), 2500)
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Failed to save search')
+    } finally {
+      setSavingSearch(false)
+    }
+  }
+
+  const handleLoadSearch = (s: SavedSearch) => {
+    setQuery(s.query)
+    setShowSavedSearches(false)
+    setSearchParams({ q: s.query })
+    runSearch(s.query)
+  }
+
+  const handleDeleteSavedSearch = async (id: number, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!token) return
+    try {
+      await api.delete<{ message: string }>(`/api/saved-searches/${id}`, token)
+      setSavedSearches((prev) => prev.filter((s) => s.id !== id))
+    } catch {}
+  }
+
   const filteredResults = results.filter((p) => {
     if (sourceFilter !== 'All' && p.source !== sourceFilter) return false
     if (yearFilter !== 'All years') {
@@ -104,18 +155,18 @@ export default function ExplorePage() {
   return (
     <div style={{ padding: '32px', maxWidth: 1100, margin: '0 auto' }}>
       <div style={{ marginBottom: 28 }}>
-        <p style={{ color: '#64748b', fontSize: 13, marginBottom: 4 }}>Academic discovery</p>
-        <h1 style={{ color: '#f8fafc', fontSize: 22, fontWeight: 700, margin: 0 }}>Explore Research</h1>
-        <p style={{ color: '#94a3b8', fontSize: 13, marginTop: 6 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 4 }}>Academic discovery</p>
+        <h1 style={{ color: 'var(--text-primary)', fontSize: 22, fontWeight: 700, margin: 0 }}>Explore Research</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 6 }}>
           Search across arXiv, Semantic Scholar, Crossref and PubMed simultaneously.
         </p>
       </div>
 
-      {/* Search bar */}
+      {/* Search bar row */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
           <div style={{ flex: 1, position: 'relative' }}>
-            <Search size={16} color="#64748b" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
+            <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)' }} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -125,23 +176,114 @@ export default function ExplorePage() {
                 width: '100%',
                 padding: '12px 14px 12px 42px',
                 borderRadius: 10,
-                border: '1px solid #1e293b',
-                background: '#0b1120',
-                color: '#e2e8f0',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text-primary)',
                 fontSize: 14,
                 outline: 'none',
                 boxSizing: 'border-box',
               }}
             />
           </div>
+
+          {/* Saved searches dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => setShowSavedSearches(!showSavedSearches)}
+              title="Recent searches"
+              style={{
+                padding: '12px 14px',
+                borderRadius: 10,
+                border: '1px solid var(--border)',
+                background: showSavedSearches ? 'var(--border)' : 'var(--surface)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 13,
+                position: 'relative',
+              }}
+            >
+              <Clock size={14} />
+              {savedSearches.length > 0 && (
+                <span style={{
+                  position: 'absolute',
+                  top: 6, right: 6,
+                  width: 7, height: 7,
+                  borderRadius: '50%',
+                  background: '#3b82f6',
+                }} />
+              )}
+            </button>
+            {showSavedSearches && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: 6,
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: 10,
+                padding: 8,
+                minWidth: 280,
+                zIndex: 100,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+              }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: 11, margin: '4px 8px 8px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Saved searches
+                </p>
+                {savedSearches.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13, padding: '8px 8px 4px', margin: 0 }}>
+                    No saved searches yet.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 240, overflowY: 'auto' }}>
+                    {savedSearches.map((s) => (
+                      <div
+                        key={s.id}
+                        onClick={() => handleLoadSearch(s)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '8px 10px',
+                          borderRadius: 7,
+                          cursor: 'pointer',
+                          background: 'transparent',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--border)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <Search size={12} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+                        <span style={{ flex: 1, color: 'var(--text-primary)', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {s.query}
+                        </span>
+                        {s.result_count != null && (
+                          <span style={{ color: 'var(--text-muted)', fontSize: 11, flexShrink: 0 }}>{s.result_count}</span>
+                        )}
+                        <button
+                          onClick={(e) => handleDeleteSavedSearch(s.id, e)}
+                          style={{ padding: 3, borderRadius: 4, border: 'none', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', flexShrink: 0, display: 'flex' }}
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             style={{
               padding: '12px 16px',
               borderRadius: 10,
-              border: '1px solid #1e293b',
-              background: showFilters ? '#1e293b' : '#0b1120',
-              color: '#94a3b8',
+              border: '1px solid var(--border)',
+              background: showFilters ? 'var(--border)' : 'var(--surface)',
+              color: 'var(--text-secondary)',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -158,7 +300,7 @@ export default function ExplorePage() {
               padding: '12px 24px',
               borderRadius: 10,
               border: 'none',
-              background: loading ? '#334155' : '#3b82f6',
+              background: loading ? 'var(--border)' : '#3b82f6',
               color: '#fff',
               fontWeight: 600,
               fontSize: 14,
@@ -178,14 +320,14 @@ export default function ExplorePage() {
             display: 'flex',
             gap: 16,
             padding: '16px',
-            background: '#0b1120',
-            border: '1px solid #1e293b',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
             borderRadius: 10,
             flexWrap: 'wrap',
             marginBottom: 10,
           }}>
             <div>
-              <label style={{ color: '#64748b', fontSize: 12, display: 'block', marginBottom: 6 }}>Source</label>
+              <label style={{ color: 'var(--text-muted)', fontSize: 12, display: 'block', marginBottom: 6 }}>Source</label>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {SOURCES.map((s) => (
                   <button
@@ -195,9 +337,9 @@ export default function ExplorePage() {
                       padding: '4px 10px',
                       borderRadius: 20,
                       border: '1px solid',
-                      borderColor: sourceFilter === s ? '#3b82f6' : '#1e293b',
+                      borderColor: sourceFilter === s ? '#3b82f6' : 'var(--border)',
                       background: sourceFilter === s ? '#1e3a5f' : 'transparent',
-                      color: sourceFilter === s ? '#93c5fd' : '#64748b',
+                      color: sourceFilter === s ? '#93c5fd' : 'var(--text-muted)',
                       fontSize: 12,
                       cursor: 'pointer',
                     }}
@@ -208,7 +350,7 @@ export default function ExplorePage() {
               </div>
             </div>
             <div>
-              <label style={{ color: '#64748b', fontSize: 12, display: 'block', marginBottom: 6 }}>Year</label>
+              <label style={{ color: 'var(--text-muted)', fontSize: 12, display: 'block', marginBottom: 6 }}>Year</label>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {YEARS.map((y) => (
                   <button
@@ -218,9 +360,9 @@ export default function ExplorePage() {
                       padding: '4px 10px',
                       borderRadius: 20,
                       border: '1px solid',
-                      borderColor: yearFilter === y ? '#3b82f6' : '#1e293b',
+                      borderColor: yearFilter === y ? '#3b82f6' : 'var(--border)',
                       background: yearFilter === y ? '#1e3a5f' : 'transparent',
-                      color: yearFilter === y ? '#93c5fd' : '#64748b',
+                      color: yearFilter === y ? '#93c5fd' : 'var(--text-muted)',
                       fontSize: 12,
                       cursor: 'pointer',
                     }}
@@ -231,16 +373,16 @@ export default function ExplorePage() {
               </div>
             </div>
             <div>
-              <label style={{ color: '#64748b', fontSize: 12, display: 'block', marginBottom: 6 }}>Results per search</label>
+              <label style={{ color: 'var(--text-muted)', fontSize: 12, display: 'block', marginBottom: 6 }}>Results per search</label>
               <select
                 value={limit}
                 onChange={(e) => setLimit(Number(e.target.value))}
                 style={{
                   padding: '4px 10px',
                   borderRadius: 6,
-                  border: '1px solid #1e293b',
-                  background: '#0f172a',
-                  color: '#94a3b8',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg)',
+                  color: 'var(--text-secondary)',
                   fontSize: 12,
                 }}
               >
@@ -262,9 +404,9 @@ export default function ExplorePage() {
                 style={{
                   padding: '5px 12px',
                   borderRadius: 20,
-                  border: '1px solid #1e293b',
-                  background: '#0b1120',
-                  color: '#64748b',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--text-muted)',
                   fontSize: 12,
                   cursor: 'pointer',
                 }}
@@ -281,8 +423,8 @@ export default function ExplorePage() {
         <div style={{
           padding: '10px 14px',
           borderRadius: 8,
-          background: '#1e293b',
-          color: '#94a3b8',
+          background: 'var(--surface)',
+          color: 'var(--text-secondary)',
           fontSize: 13,
           marginBottom: 16,
         }}>
@@ -293,10 +435,29 @@ export default function ExplorePage() {
       {/* Results header */}
       {results.length > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <span style={{ fontSize: 13, color: '#64748b' }}>
+          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             {filteredResults.length} of {results.length} results
             {sourceFilter !== 'All' || yearFilter !== 'All years' ? ' (filtered)' : ''}
           </span>
+          <button
+            onClick={handleSaveSearch}
+            disabled={savingSearch || !query.trim()}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: '6px 12px',
+              borderRadius: 7,
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--text-muted)',
+              fontSize: 12,
+              cursor: savingSearch || !query.trim() ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {savingSearch ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Save size={12} />}
+            Save search
+          </button>
         </div>
       )}
 
@@ -313,7 +474,7 @@ export default function ExplorePage() {
       </div>
 
       {loading && (
-        <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+        <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
           <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} />
           <p style={{ marginTop: 12, fontSize: 13 }}>Searching across academic sources...</p>
         </div>
@@ -330,8 +491,8 @@ function PaperCard({ paper, saved, onSave }: { paper: Paper; saved: boolean; onS
 
   return (
     <div style={{
-      background: '#0b1120',
-      border: '1px solid #1e293b',
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
       borderRadius: 12,
       padding: '20px 24px',
       transition: 'border-color 0.15s',
@@ -341,7 +502,7 @@ function PaperCard({ paper, saved, onSave }: { paper: Paper; saved: boolean; onS
           <span style={{
             padding: '2px 8px',
             borderRadius: 20,
-            background: '#1e293b',
+            background: 'var(--border)',
             color: '#3b82f6',
             fontSize: 11,
             fontWeight: 500,
@@ -349,7 +510,7 @@ function PaperCard({ paper, saved, onSave }: { paper: Paper; saved: boolean; onS
             {paper.source}
           </span>
           {paper.publication_year && (
-            <span style={{ color: '#64748b', fontSize: 12 }}>{paper.publication_year}</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{paper.publication_year}</span>
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -364,8 +525,8 @@ function PaperCard({ paper, saved, onSave }: { paper: Paper; saved: boolean; onS
                 gap: 4,
                 padding: '5px 10px',
                 borderRadius: 6,
-                border: '1px solid #1e293b',
-                color: '#64748b',
+                border: '1px solid var(--border)',
+                color: 'var(--text-muted)',
                 fontSize: 12,
                 textDecoration: 'none',
                 background: 'transparent',
@@ -384,9 +545,9 @@ function PaperCard({ paper, saved, onSave }: { paper: Paper; saved: boolean; onS
               padding: '5px 12px',
               borderRadius: 6,
               border: '1px solid',
-              borderColor: saved ? '#10b981' : '#1e293b',
+              borderColor: saved ? '#10b981' : 'var(--border)',
               background: saved ? '#0d2a20' : 'transparent',
-              color: saved ? '#34d399' : '#94a3b8',
+              color: saved ? '#34d399' : 'var(--text-secondary)',
               fontSize: 12,
               cursor: saved ? 'default' : 'pointer',
               fontWeight: saved ? 500 : 400,
@@ -396,21 +557,21 @@ function PaperCard({ paper, saved, onSave }: { paper: Paper; saved: boolean; onS
           </button>
         </div>
       </div>
-      <h3 style={{ color: '#f1f5f9', fontSize: 15, fontWeight: 600, lineHeight: 1.4, marginBottom: 6, margin: '0 0 6px' }}>
+      <h3 style={{ color: 'var(--text-primary)', fontSize: 15, fontWeight: 600, lineHeight: 1.4, marginBottom: 6, margin: '0 0 6px' }}>
         {paper.title}
       </h3>
       {paper.authors && (
-        <p style={{ color: '#64748b', fontSize: 12, marginBottom: 8, margin: '0 0 8px' }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 8, margin: '0 0 8px' }}>
           {paper.authors}
         </p>
       )}
       {paper.abstract && (
-        <p style={{ color: '#94a3b8', fontSize: 13, lineHeight: 1.6, margin: 0 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6, margin: 0 }}>
           {truncate(paper.abstract, 300)}
         </p>
       )}
       {!paper.abstract && (
-        <p style={{ color: '#334155', fontSize: 13, fontStyle: 'italic', margin: 0 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, fontStyle: 'italic', margin: 0 }}>
           Abstract not available for this record.
         </p>
       )}

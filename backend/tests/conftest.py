@@ -10,6 +10,8 @@ from app.models.report import Report  # noqa: F401
 from app.models.embedding import PaperEmbedding, DocumentChunk  # noqa: F401
 from app.models.collection import Collection, CollectionPaper  # noqa: F401
 from app.models.conversation import Conversation, ConversationMessage  # noqa: F401
+from app.models.saved_search import SavedSearch  # noqa: F401
+from app.models.tag import PaperTag  # noqa: F401
 
 
 @pytest.fixture(scope="session", autouse=True)
