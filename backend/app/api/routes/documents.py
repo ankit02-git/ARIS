@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
@@ -272,9 +273,8 @@ def serve_document_file(
     doc_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> FileResponse:
+):
     """Serve the raw PDF file for browser preview."""
-    from fastapi.responses import FileResponse
     doc = db.query(UploadedDocument).filter_by(id=doc_id, user_id=current_user.id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
-import { FileText, Download, Loader2, CheckCircle, XCircle, Plus } from 'lucide-react'
+import { FileText, Download, Loader2, CheckCircle, XCircle, Plus, Trash2 } from 'lucide-react'
 
 type ReportType = 'library_summary' | 'trend_analysis' | 'paper_comparison'
 type ReportFormat = 'pdf' | 'csv' | 'json' | 'docx' | 'bibtex'
@@ -58,6 +58,19 @@ export default function ReportsPage() {
       setMessage(err instanceof Error ? err.message : 'Report generation failed')
     } finally {
       setGenerating(false)
+    }
+  }
+
+  const handleDelete = async (reportId: number) => {
+    if (!token) return
+    if (!window.confirm('Delete this report? The file will be permanently removed.')) return
+    try {
+      await api.delete(`/api/reports/${reportId}`, token)
+      setReports((prev) => prev.filter((r) => r.id !== reportId))
+      setMessage('Report deleted.')
+      setTimeout(() => setMessage(''), 3000)
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Delete failed')
     }
   }
 
@@ -181,7 +194,7 @@ export default function ReportsPage() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {reports.map((report) => (
-            <ReportRow key={report.id} report={report} onDownload={handleDownload} />
+            <ReportRow key={report.id} report={report} onDownload={handleDownload} onDelete={handleDelete} />
           ))}
         </div>
       )}
@@ -190,7 +203,7 @@ export default function ReportsPage() {
   )
 }
 
-function ReportRow({ report, onDownload }: { report: Report; onDownload: (r: Report) => void }) {
+function ReportRow({ report, onDownload, onDelete }: { report: Report; onDownload: (r: Report) => void; onDelete: (id: number) => void }) {
   const statusConfig = {
     pending: { color: '#f59e0b', icon: <Loader2 size={12} />, label: 'Pending' },
     processing: { color: '#3b82f6', icon: <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />, label: 'Processing' },
@@ -227,18 +240,31 @@ function ReportRow({ report, onDownload }: { report: Report; onDownload: (r: Rep
           </span>
         </div>
       </div>
-      {report.status === 'completed' && report.file_path && (
+      <div style={{ display: 'flex', gap: 8 }}>
+        {report.status === 'completed' && report.file_path && (
+          <button
+            onClick={() => onDownload(report)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '7px 12px', borderRadius: 7, border: '1px solid #1e3a5f',
+              background: '#0f172a', color: '#93c5fd', fontSize: 12, cursor: 'pointer',
+            }}
+          >
+            <Download size={12} /> Download
+          </button>
+        )}
         <button
-          onClick={() => onDownload(report)}
+          onClick={() => onDelete(report.id)}
+          title="Delete report"
           style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '7px 12px', borderRadius: 7, border: '1px solid #1e3a5f',
-            background: '#0f172a', color: '#93c5fd', fontSize: 12, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', padding: '7px 10px',
+            borderRadius: 7, border: '1px solid #2d1a1a',
+            background: 'transparent', color: '#ef4444', cursor: 'pointer',
           }}
         >
-          <Download size={12} /> Download
+          <Trash2 size={13} />
         </button>
-      )}
+      </div>
     </div>
   )
 }

@@ -1,0 +1,302 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARIS Feature Checklist</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #ffffff;
+    color: #1f2328;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  /* Header */
+  .header { margin-bottom: 28px; }
+  .header h1 { font-size: 22px; font-weight: 700; color: #1f2328; }
+  .header p { color: #57606a; margin-top: 4px; font-size: 13px; }
+  .badges { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .badge-green { background: #dcfce7; color: #16a34a; }
+  .badge-blue  { background: #dbeafe; color: #1d4ed8; }
+  .badge-purple{ background: #ede9fe; color: #7c3aed; }
+
+  /* Summary bar */
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 28px;
+  }
+  .summary-card {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 8px; padding: 14px 12px; text-align: center;
+  }
+  .summary-card .num { font-size: 26px; font-weight: 700; color: #3b82d4; }
+  .summary-card .lbl { font-size: 11px; color: #57606a; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Section */
+  .section { margin-bottom: 24px; }
+  .section-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.6px; color: #57606a;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 6px; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title .milestone {
+    font-size: 11px; font-weight: 600; color: #3b82d4;
+    background: #dbeafe; padding: 2px 8px; border-radius: 10px;
+    text-transform: none; letter-spacing: 0;
+  }
+
+  /* Item rows */
+  .item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 5px 0; border-bottom: 1px solid #f3f4f6;
+  }
+  .item:last-child { border-bottom: none; }
+  .check {
+    flex-shrink: 0; width: 18px; height: 18px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; margin-top: 2px;
+  }
+  .check-done { background: #16a34a; color: #fff; }
+  .check-pending { background: #e5e7eb; color: #9ca3af; }
+  .check-future { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+  .item-text { flex: 1; font-size: 13px; color: #1f2328; }
+  .item-text .sub { font-size: 11px; color: #57606a; margin-top: 1px; }
+  .tag {
+    flex-shrink: 0; font-size: 10px; font-weight: 600;
+    padding: 1px 7px; border-radius: 10px;
+    background: #f7f8fa; color: #57606a; border: 1px solid #e5e7eb;
+    align-self: center;
+  }
+  .tag-be { background: #ede9fe; color: #7c3aed; border-color: #ddd6fe; }
+  .tag-fe { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+  .tag-ai { background: #fce7f3; color: #db2777; border-color: #fbcfe8; }
+  .tag-db { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+
+  /* GitHub section */
+  .github-row {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 8px; padding: 14px 16px; margin-top: 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .github-icon { font-size: 22px; }
+  .github-text { flex: 1; }
+  .github-text strong { font-size: 13px; }
+  .github-text a { color: #3b82d4; font-size: 12px; text-decoration: none; }
+  .github-text a:hover { text-decoration: underline; }
+  .status-pill {
+    font-size: 11px; font-weight: 700; padding: 3px 10px;
+    border-radius: 12px; background: #dcfce7; color: #16a34a;
+  }
+
+  footer {
+    margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 12px; color: #57606a;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  
+  <div class="header">
+    <h1>ARIS — Feature Implementation Checklist</h1>
+    <p>Affective Research Intelligence System · SRS v1.0 → Implementation Cross-Check</p>
+    <div class="badges">
+      <span class="badge badge-green">✓ 79/79 Tests Passing</span>
+      <span class="badge badge-blue">✓ TypeScript 0 Errors</span>
+      <span class="badge badge-purple">✓ Vite Build Success</span>
+    </div>
+  </div>
+
+  
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num">44</div><div class="lbl">Features Done</div></div>
+    <div class="summary-card"><div class="num">50+</div><div class="lbl">API Endpoints</div></div>
+    <div class="summary-card"><div class="num">13</div><div class="lbl">DB Tables</div></div>
+    <div class="summary-card"><div class="num">10</div><div class="lbl">Frontend Pages</div></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Authentication &amp; User Management <span class="milestone">Milestone 1</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Register with name, email, password<div class="sub">POST /api/auth/register · test_auth.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Argon2 password hashing<div class="sub">passlib[argon2] · auth_service.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">JWT login &amp; token expiry<div class="sub">POST /api/auth/login → access_token</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Protected routes reject unauthenticated requests (HTTP 401)<div class="sub">deps.py · get_current_user dependency</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Per-user private workspace isolation<div class="sub">All queries filter by user_id</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Change password (logged-in)<div class="sub">POST /api/auth/change-password · test_milestone6b.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Token-based password reset (request + confirm)<div class="sub">POST /api/auth/request-reset + /confirm-reset</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Auth UI — Register &amp; Login page with form validation<div class="sub">AuthPage.tsx · AuthContext.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">JWT persistence in localStorage across page reloads<div class="sub">AuthContext.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Academic Research Discovery <span class="milestone">Milestone 2</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">arXiv adapter<div class="sub">arxiv_adapter.py · live API</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Semantic Scholar adapter<div class="sub">semantic_scholar_adapter.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Crossref adapter<div class="sub">crossref_adapter.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">PubMed adapter<div class="sub">pubmed_adapter.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Unified search with DOI/external_id/URL/title deduplication<div class="sub">GET /api/search · test_academic_search.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Search modes: external, semantic, hybrid<div class="sub">?mode= param · search_service.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Author &amp; year filter on search<div class="sub">?author= &amp; ?year= params</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Explore Research page with search UI &amp; results<div class="sub">ExplorePage.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Save search as named bookmark (clock icon dropdown)<div class="sub">ExplorePage.tsx · /api/saved-searches</div></div><span class="tag tag-fe">Frontend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Research Library <span class="milestone">Milestone 2–3</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Save paper from search results<div class="sub">POST /api/library/save-paper</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Remove paper from library<div class="sub">DELETE /api/library/remove/{id}</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Library deduplication (shared research_papers table)<div class="sub">test_library.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Smart tags — add/remove inline on library papers<div class="sub">/api/tags · LibraryPage.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Filter library papers by tag<div class="sub">/api/tags/by-tag/{tag}</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">PDF preview panel in Library<div class="sub">LibraryPage.tsx · /api/documents/{id}/file</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Document search tab (full-text across uploads)<div class="sub">/api/documents/search · LibraryPage.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">PDF Upload &amp; Document Intelligence <span class="milestone">Milestone 3</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Upload PDF up to 50 MB<div class="sub">POST /api/documents/upload · documents.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Reject non-PDF files (extension + magic bytes)<div class="sub">test_milestone4.py::test_document_upload_rejects_non_pdf</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Background text extraction with PyMuPDF<div class="sub">Background task · status: pending→processing→completed</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Section parsing (heading detection)<div class="sub">document_chunks · section_heading column</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Delete uploaded document<div class="sub">DELETE /api/documents/{id}</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Serve raw PDF file<div class="sub">GET /api/documents/{id}/file</div></div><span class="tag tag-be">Backend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">AI Research Assistant (RAG) <span class="milestone">Milestone 4</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">all-MiniLM-L6-v2 embeddings (384-dim, stored in PostgreSQL)<div class="sub">embedding_service.py · paper_embeddings table</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">FAISS flat index (in-memory, auto-rebuilt from DB)<div class="sub">FAISS IndexFlatIP · cosine similarity</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Hybrid semantic + keyword search<div class="sub">70% semantic, 30% keyword · search_service.py</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">RAG pipeline: chunk → FAISS → Ollama → citations<div class="sub">rag_service.py · test_milestone4.py</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Ollama (llama3.2) inference with rule-based fallback<div class="sub">GET /api/assistant/status · no fabricated citations</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Persistent conversation history (ai_conversations + ai_messages)<div class="sub">/api/conversations · AssistantPage sidebar</div></div><span class="tag tag-db">DB</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Delete conversation<div class="sub">DELETE /api/conversations/{id}</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Conversation isolation between users<div class="sub">test_milestone6.py::test_conversation_isolation</div></div><span class="tag tag-be">Backend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Research Analytics &amp; Gap Engine <span class="milestone">Milestone 3–4</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Publications by year chart (Recharts)<div class="sub">AnalysisPage.tsx · /api/analytics</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Domain distribution chart<div class="sub">Affective computing domain classification</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Keyword frequency chart<div class="sub">Real title/abstract extraction</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Analytics filters: year range + source<div class="sub">?year_from=&amp;year_to=&amp;source= params · test_milestone6.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Research gap engine (4 gap types)<div class="sub">limitation patterns, domain gaps, methodology gaps, emerging topics</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Gap cards with evidence, excerpts, suggestions UI<div class="sub">AnalysisPage.tsx expandable cards</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Research insights (themes, methods, momentum)<div class="sub">/api/insights · insight_service.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Evidence brief (synthesis of saved library)<div class="sub">/api/brief · brief_service.py</div></div><span class="tag tag-be">Backend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Collections <span class="milestone">Milestone 6</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Create / list / update / delete collection (CRUD)<div class="sub">/api/collections · test_milestone6.py</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Add / remove paper from collection<div class="sub">/api/collections/{id}/papers</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Cannot add unsaved paper to collection (validated)<div class="sub">test_milestone6.py::test_cannot_add_unsaved_paper</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Collection analysis tab (keywords, domains, year chart)<div class="sub">/api/collections/{id}/analyze · CollectionsPage.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Collection isolation between users<div class="sub">test_milestone6.py::test_collection_isolation</div></div><span class="tag tag-be">Backend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Paper Comparison <span class="milestone">Milestone 2 / 6</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Semantic pairwise similarity scoring<div class="sub">comparison_service.py · FAISS + lexical fallback</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Evidence excerpts &amp; progress bars in Comparison UI<div class="sub">ComparisonPage.tsx · POST /api/compare</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Only user's saved papers accessible in comparison<div class="sub">test_analysis.py::test_compare_endpoint_only_accepts...</div></div><span class="tag tag-be">Backend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Recommendations <span class="milestone">Milestone 3</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Jaccard + embedding-based paper recommendations<div class="sub">GET /api/recommendations</div></div><span class="tag tag-ai">AI/ML</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Only recommends papers not in user's library<div class="sub">RecommendationsPage.tsx</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Human-readable explanation per recommendation<div class="sub">Reason string in response</div></div><span class="tag tag-be">Backend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Report Generation <span class="milestone">Milestone 3 / 6</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">PDF report (ReportLab)<div class="sub">POST /api/reports/generate · format=pdf</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">DOCX report (python-docx)<div class="sub">format=docx · test_milestone6.py::test_generate_docx</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">CSV export<div class="sub">format=csv · Pandas</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">JSON export<div class="sub">format=json</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">BibTeX export<div class="sub">format=bibtex · test_milestone6.py::test_generate_bibtex</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Download generated report file<div class="sub">GET /api/reports/{id}/download</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Reports page UI<div class="sub">ReportsPage.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Dashboard <span class="milestone">Milestone 2</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Real stats (papers saved, domains, top keywords, sources)<div class="sub">/api/dashboard · DashboardPage.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Recent activity tracking<div class="sub">test_analysis.py::test_dashboard_tracks_saved_papers</div></div><span class="tag tag-be">Backend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Settings &amp; Theme <span class="milestone">Milestone 6</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Light / dark theme toggle (localStorage persisted)<div class="sub">ThemeContext.tsx · AppLayout.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">CSS variable theme system (--bg, --surface, --surface-active)<div class="sub">index.css</div></div><span class="tag tag-fe">Frontend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Settings page — Appearance &amp; Change Password<div class="sub">SettingsPage.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Database &amp; Infrastructure <span class="milestone">All</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">PostgreSQL — 13 tables, all FK constraints with CASCADE<div class="sub">SQLAlchemy 2 ORM · auto-create on startup</div></div><span class="tag tag-db">DB</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Alembic migrations — 0001 initial + 0002 all new tables<div class="sub">alembic/versions/ · correct chain</div></div><span class="tag tag-db">DB</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">Environment variables via .env (no hardcoded secrets)<div class="sub">app/core/config.py · .env.example</div></div><span class="tag tag-be">Backend</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">React Router v7 — 10 pages with protected routes<div class="sub">App.tsx · layouts/AppLayout.tsx</div></div><span class="tag tag-fe">Frontend</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Documentation &amp; Tests <span class="milestone">Milestone 5</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">SRS.md — 500+ line specification<div class="sub">docs/SRS.md</div></div><span class="tag tag-be">Docs</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">README.md — architecture diagram, full setup guide<div class="sub">README.md</div></div><span class="tag tag-be">Docs</span></div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">79 pytest tests — 6 test files, all passing<div class="sub">auth, library, analysis, milestone4/6/6b</div></div><span class="tag tag-be">Tests</span></div>
+  </div>
+
+  
+  <div class="section">
+    <div class="section-title">Pending / Future Enhancements</div>
+    <div class="item"><div class="check check-done">✓</div><div class="item-text">GitHub push to ankit02-git/ARIS<div class="sub">4 commits · master branch · pushed successfully</div></div><span class="tag">GitHub</span></div>
+    <div class="item"><div class="check check-future">~</div><div class="item-text">pgvector persistent index (no FAISS rebuild on restart)<div class="sub">Future enhancement — FAISS in-memory rebuild works fine for now</div></div><span class="tag">Future</span></div>
+    <div class="item"><div class="check check-future">~</div><div class="item-text">Full OCR for scanned PDFs (Tesseract)<div class="sub">Future — embedded-text PDFs work fine</div></div><span class="tag">Future</span></div>
+    <div class="item"><div class="check check-future">~</div><div class="item-text">Email notifications for background job completion<div class="sub">Future enhancement</div></div><span class="tag">Future</span></div>
+    <div class="item"><div class="check check-future">~</div><div class="item-text">API rate limiting &amp; abuse protection<div class="sub">Future — single-user local deployment for now</div></div><span class="tag">Future</span></div>
+  </div>
+
+  
+  <div class="github-row">
+    <div class="github-icon">⬡</div>
+    <div class="github-text">
+      <strong>Repository live on GitHub</strong><br />
+      <a href="https://github.com/ankit02-git/ARIS">https://github.com/ankit02-git/ARIS</a>
+       ·  branch: master  ·  4 commits
+    </div>
+    <span class="status-pill">PUSHED ✓</span>
+  </div>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

@@ -106,12 +106,31 @@ def generate_report(
     return _report_out(report)
 
 
+@router.delete("/{report_id}", status_code=204)
+def delete_report(
+    report_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    report = db.query(Report).filter_by(id=report_id, user_id=current_user.id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    # Delete file from disk if it exists
+    if report.file_path and os.path.isfile(report.file_path):
+        try:
+            os.remove(report.file_path)
+        except OSError:
+            pass
+    db.delete(report)
+    db.commit()
+
+
 @router.get("/{report_id}/download")
 def download_report(
     report_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> FileResponse:
+):
     report = db.query(Report).filter_by(id=report_id, user_id=current_user.id).first()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
