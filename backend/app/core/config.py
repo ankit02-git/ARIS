@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 1440
     semantic_model: str = "BAAI/bge-small-en-v1.5"
     semantic_cache_dir: str | None = None
-    google_client_id: str | None = None   # Google OAuth2 Client ID
+    google_client_id: str | None = None      # Google OAuth2 Client ID
+    google_client_secret: str | None = None  # Google OAuth2 Client Secret (server-side only)
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
