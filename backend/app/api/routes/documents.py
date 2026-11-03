@@ -25,13 +25,40 @@ def ensure_upload_dir() -> str:
     return UPLOAD_DIR
 
 
+_SKIP_PATTERNS = re.compile(
+    r"(doi:|http|www\.|©|copyright|\breceived\b|\baccepted\b|"
+    r"\bvolume\b|\bissue\b|\bjournal\b|\bpreprint\b|"
+    r"@|\d{4}[-/]\d{1,2}[-/]\d{1,2}|arxiv|elsevier|springer|"
+    r"\bpage\b|\bpp\.\b|\bissn\b|\bpublished\b)",
+    re.IGNORECASE,
+)
+
+
 def _extract_title_from_text(text: str) -> str | None:
-    """Heuristic: first non-empty line that looks like a title (< 200 chars)."""
-    for line in text.splitlines()[:20]:
+    """Improved heuristic: find a plausible title in the first 30 lines.
+
+    Skips lines that look like dates, volume info, DOIs, copyright,
+    journal names, received/accepted notices, and email addresses.
+    Prefers the longest qualifying line (titles tend to be longer than
+    affiliation snippets).
+    """
+    candidates = []
+    for line in text.splitlines()[:30]:
         stripped = line.strip()
-        if 10 < len(stripped) < 200 and not stripped.startswith("http"):
-            return stripped
-    return None
+        if len(stripped) < 15 or len(stripped) > 250:
+            continue
+        if _SKIP_PATTERNS.search(stripped):
+            continue
+        # Must have at least 3 words to be a title
+        if len(stripped.split()) < 3:
+            continue
+        candidates.append(stripped)
+
+    if not candidates:
+        return None
+
+    # Prefer the longest candidate (titles are usually verbose)
+    return max(candidates, key=len)
 
 
 def _extract_authors_from_text(text: str) -> str | None:
@@ -79,7 +106,7 @@ def _process_pdf_extraction(doc_id: int, file_path: str, db_url: str) -> None:
 
         try:
             try:
-                import pymupdf as fitz  # PyMuPDF ≥ 1.24
+                import pymupdf as fitz  # PyMuPDF >= 1.24
             except ImportError:
                 import fitz  # PyMuPDF < 1.24 fallback
             pdf = fitz.open(file_path)

@@ -16,8 +16,10 @@ async function request<T>(
     ...options,
     headers: { ...authHeaders(token), ...(options.headers ?? {}) },
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.detail || `Request failed (${res.status})`)
+  const contentType = res.headers.get('content-type')
+  const hasBody = res.status !== 204 && contentType && contentType.includes('application/json')
+  const data = hasBody ? await res.json() : null
+  if (!res.ok) throw new Error((data && data.detail) || `Request failed (${res.status})`)
   return data as T
 }
 
@@ -39,8 +41,10 @@ export const api = {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.detail || 'Upload failed')
+    const contentType = res.headers.get('content-type')
+    const hasBody = res.status !== 204 && contentType && contentType.includes('application/json')
+    const data = hasBody ? await res.json() : null
+    if (!res.ok) throw new Error((data && data.detail) || 'Upload failed')
     return data as T
   },
 }

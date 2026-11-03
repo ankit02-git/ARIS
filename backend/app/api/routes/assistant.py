@@ -107,6 +107,13 @@ def chat(
         conversation_history=conversation_history,
     )
 
+    # Ensure non-empty response (defensive fallback for Ollama offline + no chunks)
+    if not answer or not answer.strip():
+        answer = (
+            "I don't have enough context to answer this question. "
+            "Try saving some papers to your library first, or check that the AI service (Ollama) is running."
+        )
+
     # Build citations from retrieved chunks
     citations = []
     seen_pids: set[int] = set()
