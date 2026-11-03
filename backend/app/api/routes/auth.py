@@ -13,6 +13,78 @@ from app.services.auth_service import authenticate_user, create_access_token, ge
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+
+# ---------------------------------------------------------------------------
+# Google OAuth
+# ---------------------------------------------------------------------------
+
+class GoogleTokenPayload(BaseModel):
+    credential: str   # Google ID token (JWT) from Google Identity Services
+
+
+@router.post("/google", response_model=TokenResponse)
+def google_auth(payload: GoogleTokenPayload, db: Session = Depends(get_db)) -> dict[str, str]:
+    """
+    Verify a Google ID token from the frontend and return an ARIS JWT.
+    Creates a new user account on first sign-in.
+    """
+    from app.core.config import settings
+
+    if not settings.google_client_id:
+        raise HTTPException(
+            status_code=501,
+            detail="Google Sign-In is not configured on this server. Set GOOGLE_CLIENT_ID in .env"
+        )
+
+    # Verify the Google ID token
+    try:
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+        id_info = google_id_token.verify_oauth2_token(
+            payload.credential,
+            google_requests.Request(),
+            settings.google_client_id,
+            clock_skew_in_seconds=10,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail=f"Invalid Google token: {exc}")
+
+    google_sub = id_info["sub"]        # unique Google user ID
+    email = id_info.get("email", "").lower()
+    name = id_info.get("name") or email.split("@")[0]
+    avatar_url = id_info.get("picture")
+
+    if not email:
+        raise HTTPException(status_code=400, detail="Google account has no email address")
+
+    # Find existing user by google_id, fall back to email match
+    user = db.query(User).filter(User.google_id == google_sub).first()
+    if not user:
+        user = db.query(User).filter(User.email == email).first()
+
+    if user:
+        # Link google_id to existing email account if not already linked
+        if not user.google_id:
+            user.google_id = google_sub
+        if avatar_url and not user.avatar_url:
+            user.avatar_url = avatar_url
+        db.commit()
+    else:
+        # First-time Google sign-in — create account
+        user = User(
+            name=name,
+            email=email,
+            password_hash=None,   # Google users have no password
+            google_id=google_sub,
+            avatar_url=avatar_url,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    token = create_access_token(user.email)
+    return {"access_token": token, "token_type": "bearer"}
+
 # In-memory reset tokens (token -> user email). For production: use DB table + expiry.
 _reset_tokens: dict[str, str] = {}
 

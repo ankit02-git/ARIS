@@ -1,39 +1,176 @@
-import React, { useState, type FormEvent } from 'react'
+import React, { useState, useEffect, useCallback, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
-import { Microscope } from 'lucide-react'
+import { Microscope, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
 
+// ---------------------------------------------------------------------------
+// Google Client ID — set via env or leave empty to hide Google button
+// ---------------------------------------------------------------------------
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+
+// ---------------------------------------------------------------------------
+// Email validation
+// ---------------------------------------------------------------------------
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+function validateEmail(email: string): string {
+  if (!email) return 'Email is required'
+  if (!EMAIL_RE.test(email)) return 'Enter a valid email address (e.g. you@gmail.com)'
+  return ''
+}
+
+function validatePassword(password: string, mode: 'login' | 'register'): string {
+  if (!password) return 'Password is required'
+  if (mode === 'register' && password.length < 8)
+    return 'Password must be at least 8 characters'
+  return ''
+}
+
+// ---------------------------------------------------------------------------
+// Google Identity Services types (minimal)
+// ---------------------------------------------------------------------------
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (cfg: { client_id: string; callback: (resp: { credential: string }) => void }) => void
+          renderButton: (el: HTMLElement, cfg: object) => void
+          prompt: () => void
+        }
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+
+  // Validation errors
+  const [emailError, setEmailError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+  const [touched, setTouched] = useState({ email: false, password: false })
+
   const [message, setMessage] = useState('')
+  const [messageType, setMessageType] = useState<'success' | 'error'>('error')
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+
   const { login } = useAuth()
   const navigate = useNavigate()
 
+  // ---- Switch mode: clear all fields and errors ----
+  const switchMode = (m: 'login' | 'register') => {
+    setMode(m)
+    setName('')
+    setEmail('')
+    setPassword('')
+    setShowPassword(false)
+    setEmailError('')
+    setPasswordError('')
+    setTouched({ email: false, password: false })
+    setMessage('')
+  }
+
+  // ---- Live validation after touch ----
+  useEffect(() => {
+    if (touched.email) setEmailError(validateEmail(email))
+  }, [email, touched.email])
+
+  useEffect(() => {
+    if (touched.password) setPasswordError(validatePassword(password, mode))
+  }, [password, mode, touched.password])
+
+  // ---- Google Sign-In setup ----
+  const handleGoogleCredential = useCallback(async (credential: string) => {
+    setGoogleLoading(true)
+    setMessage('')
+    try {
+      const data = await api.post<{ access_token: string }>(
+        '/api/auth/google',
+        { credential },
+        null,
+      )
+      login(data.access_token)
+      navigate('/dashboard')
+    } catch (err) {
+      setMessageType('error')
+      setMessage(err instanceof Error ? err.message : 'Google sign-in failed')
+    } finally {
+      setGoogleLoading(false)
+    }
+  }, [login, navigate])
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID || !window.google) return
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (resp) => handleGoogleCredential(resp.credential),
+    })
+    const btn = document.getElementById('google-signin-btn')
+    if (btn) {
+      window.google.accounts.id.renderButton(btn, {
+        theme: 'filled_black',
+        size: 'large',
+        width: 328,
+        text: 'continue_with',
+        shape: 'rectangular',
+      })
+    }
+  }, [handleGoogleCredential])
+
+  // ---- Form submit ----
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+
+    // Force-validate everything before submit
+    const eErr = validateEmail(email)
+    const pErr = validatePassword(password, mode)
+    setEmailError(eErr)
+    setPasswordError(pErr)
+    setTouched({ email: true, password: true })
+
+    if (eErr || pErr || (mode === 'register' && !name.trim())) return
+
     setLoading(true)
     setMessage('')
     try {
       if (mode === 'register') {
-        await api.post('/api/auth/register', { name, email, password }, null)
-        setMode('login')
-        setMessage('Account created. Please sign in.')
+        await api.post('/api/auth/register', { name: name.trim(), email, password }, null)
+        switchMode('login')
+        setMessageType('success')
+        setMessage('Account created successfully! Please sign in.')
       } else {
-        const data = await api.post<{ access_token: string }>('/api/auth/login', { email, password }, null)
+        const data = await api.post<{ access_token: string }>(
+          '/api/auth/login',
+          { email, password },
+          null,
+        )
         login(data.access_token)
         navigate('/dashboard')
       }
     } catch (err) {
+      setMessageType('error')
       setMessage(err instanceof Error ? err.message : 'Authentication failed')
     } finally {
       setLoading(false)
     }
   }
+
+  const isFormValid =
+    !emailError &&
+    !passwordError &&
+    email.length > 0 &&
+    password.length > 0 &&
+    (mode === 'login' || name.trim().length > 0)
 
   return (
     <div style={{
@@ -44,6 +181,11 @@ export default function AuthPage() {
       justifyContent: 'center',
       padding: 20,
     }}>
+      {/* Load Google Identity Services script */}
+      {GOOGLE_CLIENT_ID && (
+        <script src="https://accounts.google.com/gsi/client" async defer />
+      )}
+
       <div style={{
         background: '#0b1120',
         border: '1px solid #1e293b',
@@ -78,7 +220,7 @@ export default function AuthPage() {
             <button
               key={m}
               type="button"
-              onClick={() => { setMode(m); setMessage('') }}
+              onClick={() => switchMode(m)}
               style={{
                 flex: 1,
                 padding: '8px 0',
@@ -97,54 +239,129 @@ export default function AuthPage() {
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Google Sign-In */}
+        {GOOGLE_CLIENT_ID && (
+          <>
+            <div id="google-signin-btn" style={{ marginBottom: 4, minHeight: 44 }} />
+            {googleLoading && (
+              <p style={{ color: '#64748b', fontSize: 13, textAlign: 'center', margin: '8px 0 0' }}>
+                Signing in with Google…
+              </p>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0' }}>
+              <div style={{ flex: 1, height: 1, background: '#1e293b' }} />
+              <span style={{ color: '#475569', fontSize: 12 }}>or continue with email</span>
+              <div style={{ flex: 1, height: 1, background: '#1e293b' }} />
+            </div>
+          </>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }} noValidate>
           {mode === 'register' && (
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <span style={{ color: '#94a3b8', fontSize: 13 }}>Full name</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ color: '#94a3b8', fontSize: 13 }}>Full name</label>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
                 style={inputStyle}
                 placeholder="Your name"
+                autoComplete="name"
               />
-            </label>
+            </div>
           )}
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ color: '#94a3b8', fontSize: 13 }}>Email address</span>
+
+          {/* Email field with validation */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ color: '#94a3b8', fontSize: 13 }}>Email address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, email: true }))}
               required
-              style={inputStyle}
+              style={{
+                ...inputStyle,
+                borderColor: touched.email && emailError ? '#ef4444' : '#1e293b',
+              }}
               placeholder="you@example.com"
+              autoComplete="email"
             />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ color: '#94a3b8', fontSize: 13 }}>Password</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={inputStyle}
-              placeholder="••••••••"
-            />
-          </label>
+            {touched.email && emailError && (
+              <span style={{ color: '#ef4444', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <AlertCircle size={12} /> {emailError}
+              </span>
+            )}
+          </div>
 
+          {/* Password field with show/hide toggle */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ color: '#94a3b8', fontSize: 13 }}>Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setTouched((t) => ({ ...t, password: true }))}
+                required
+                style={{
+                  ...inputStyle,
+                  paddingRight: 40,
+                  borderColor: touched.password && passwordError ? '#ef4444' : '#1e293b',
+                }}
+                placeholder="••••••••"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                style={{
+                  position: 'absolute',
+                  right: 10,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#475569',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: 0,
+                }}
+                tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+            {touched.password && passwordError && (
+              <span style={{ color: '#ef4444', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <AlertCircle size={12} /> {passwordError}
+              </span>
+            )}
+            {mode === 'register' && password.length > 0 && !passwordError && (
+              <span style={{ color: '#4ade80', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                <CheckCircle size={12} /> Password looks good
+              </span>
+            )}
+          </div>
+
+          {/* Message banner */}
           {message && (
             <div style={{
               padding: '10px 14px',
               borderRadius: 8,
-              background: message.toLowerCase().includes('success') || message.toLowerCase().includes('created')
-                ? '#0d2a0d'
-                : '#2a0d0d',
-              color: message.toLowerCase().includes('success') || message.toLowerCase().includes('created')
-                ? '#4ade80'
-                : '#f87171',
+              background: messageType === 'success' ? '#0d2a0d' : '#2a0d0d',
+              color: messageType === 'success' ? '#4ade80' : '#f87171',
               fontSize: 13,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
             }}>
+              {messageType === 'success'
+                ? <CheckCircle size={14} />
+                : <AlertCircle size={14} />}
               {message}
             </div>
           )}
@@ -156,16 +373,19 @@ export default function AuthPage() {
               padding: '12px',
               borderRadius: 8,
               border: 'none',
-              background: loading ? '#334155' : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              background: loading
+                ? '#334155'
+                : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
               color: '#fff',
               fontWeight: 600,
               fontSize: 14,
               cursor: loading ? 'not-allowed' : 'pointer',
               marginTop: 4,
               transition: 'opacity 0.15s',
+              opacity: !isFormValid && !loading ? 0.6 : 1,
             }}
           >
-            {loading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Create account'}
+            {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
           </button>
         </form>
       </div>
@@ -182,4 +402,6 @@ const inputStyle: React.CSSProperties = {
   fontSize: 14,
   outline: 'none',
   width: '100%',
+  boxSizing: 'border-box',
+  transition: 'border-color 0.15s',
 }

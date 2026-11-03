@@ -11,3 +11,4 @@ fastembed>=0.7.3
 python-docx>=1.1.0
 pytest>=8.3.4
 pytest-cov>=5.0.0
+google-auth>=2.28.0
