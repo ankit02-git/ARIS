@@ -110,20 +110,50 @@ export default function AuthPage() {
   }, [login, navigate])
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID || !window.google) return
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: (resp) => handleGoogleCredential(resp.credential),
-    })
-    const btn = document.getElementById('google-signin-btn')
-    if (btn) {
-      window.google.accounts.id.renderButton(btn, {
-        theme: 'filled_black',
-        size: 'large',
-        width: 328,
-        text: 'continue_with',
-        shape: 'rectangular',
+    if (!GOOGLE_CLIENT_ID) return
+
+    const initGoogle = () => {
+      if (!window.google) return
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: (resp) => handleGoogleCredential(resp.credential),
       })
+      const btn = document.getElementById('google-signin-btn')
+      if (btn) {
+        window.google.accounts.id.renderButton(btn, {
+          theme: 'filled_black',
+          size: 'large',
+          width: 328,
+          text: 'continue_with',
+          shape: 'rectangular',
+        })
+      }
+    }
+
+    // If Google script already loaded (e.g. hot-reload), init immediately
+    if (window.google) {
+      initGoogle()
+      return
+    }
+
+    // Inject Google GSI script dynamically — <script> in JSX doesn't execute
+    const existing = document.getElementById('google-gsi-script')
+    if (existing) {
+      // Script tag exists but google object not ready yet — wait
+      existing.addEventListener('load', initGoogle)
+      return () => existing.removeEventListener('load', initGoogle)
+    }
+
+    const script = document.createElement('script')
+    script.id = 'google-gsi-script'
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    script.onload = initGoogle
+    document.head.appendChild(script)
+
+    return () => {
+      // cleanup listener only — don't remove script (it may be used elsewhere)
     }
   }, [handleGoogleCredential])
 
@@ -181,11 +211,6 @@ export default function AuthPage() {
       justifyContent: 'center',
       padding: 20,
     }}>
-      {/* Load Google Identity Services script */}
-      {GOOGLE_CLIENT_ID && (
-        <script src="https://accounts.google.com/gsi/client" async defer />
-      )}
-
       <div style={{
         background: '#0b1120',
         border: '1px solid #1e293b',
