@@ -1,0 +1,908 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ARIS User Guide</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+  }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 32px;
+  }
+
+  /* Cover */
+  .cover {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 56px 32px 48px;
+    text-align: center;
+    border-radius: 0;
+  }
+  .cover-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+  .cover h1 { font-size: 36px; font-weight: 800; margin-bottom: 8px; }
+  .cover .subtitle { color: #94a3b8; font-size: 15px; margin-bottom: 24px; }
+  .cover .badge {
+    display: inline-block;
+    padding: 4px 14px;
+    background: #1e293b;
+    border-radius: 20px;
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  /* TOC */
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1f2328;
+    font-size: 13px;
+  }
+  .toc-item:hover { background: #eef2ff; }
+  .toc-num {
+    width: 24px; height: 24px;
+    background: #3b82d4;
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* Section heading */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #3b82d4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    margin-top: 40px;
+  }
+  .section-title:first-of-type { margin-top: 0; }
+  hr.divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 36px 0;
+  }
+
+  /* Page card */
+  .page-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .page-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    background: #f7f8fa;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .page-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .page-card-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1f2328;
+    margin-bottom: 2px;
+  }
+  .page-card-header .url-badge {
+    font-size: 11px;
+    color: #57606a;
+    background: #e5e7eb;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+  .page-card-body { padding: 20px; }
+
+  .purpose-box {
+    background: #eef6ff;
+    border-left: 3px solid #3b82d4;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    color: #1d4ed8;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } .toc-grid { grid-template-columns: 1fr; } }
+
+  h3 { font-size: 12px; font-weight: 700; color: #57606a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+
+  ul { padding-left: 18px; }
+  ul li { font-size: 13px; color: #1f2328; margin-bottom: 4px; }
+
+  .tip-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 14px;
+  }
+  .tip-box .tip-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #16a34a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .tip-box ul li { color: #166534; font-size: 13px; }
+
+  .workflow-box {
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-top: 14px;
+  }
+  .workflow-box .wf-label {
+    font-size: 11px; font-weight: 700; color: #7c3aed;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;
+  }
+  .workflow-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .wf-step {
+    background: #ede9fe;
+    color: #4c1d95;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .wf-arrow { color: #a78bfa; font-weight: bold; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .tag {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-green { background: #dcfce7; color: #166534; }
+  .tag-purple { background: #ede9fe; color: #4c1d95; }
+  .tag-orange { background: #ffedd5; color: #9a3412; }
+
+  .prereq-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #92400e;
+  }
+  .prereq-box strong { color: #78350f; }
+
+  /* Workflow diagram */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 10px 0;
+  }
+  .flow-box {
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #1f2328;
+  }
+  .flow-arrow { color: #9ca3af; font-size: 14px; }
+
+  .footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 12px;
+    color: #57606a;
+  }
+</style>
+</head>
+<body>
+
+
+<div class="cover">
+  <div class="cover-logo">🔬</div>
+  <h1>ARIS User Guide</h1>
+  <p class="subtitle">Affective Research Intelligence System — Complete Page Reference</p>
+  <span class="badge">v1.0  ·  11 Pages Covered  ·  2026</span>
+</div>
+
+<div class="page">
+
+  
+  <p class="section-title">Recommended Workflow</p>
+  <div class="page-card">
+    <div class="page-card-body">
+      <p style="font-size:13px;color:#57606a;margin-bottom:12px">ARIS mein kaam karne ka best order — pehli baar use karte time yeh steps follow karo:</p>
+      <div class="flow-row">
+        <div class="flow-box">1️⃣ Register/Login</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">2️⃣ Explore — Papers dhundho</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">3️⃣ Library — Papers save karo</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">4️⃣ Upload PDF (optional)</div>
+      </div>
+      <div class="flow-row" style="margin-top:4px">
+        <div class="flow-box">5️⃣ Analysis — Trends dekho</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">6️⃣ Assistant — Questions pucho</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">7️⃣ Collections — Organize karo</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">8️⃣ Reports — Export karo</div>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Pages Index</p>
+  <div class="toc-grid">
+    <div class="toc-item"><span class="toc-num">1</span> Dashboard — Home</div>
+    <div class="toc-item"><span class="toc-num">2</span> Explore — Paper Search</div>
+    <div class="toc-item"><span class="toc-num">3</span> Library — My Papers</div>
+    <div class="toc-item"><span class="toc-num">4</span> Analysis — Analytics</div>
+    <div class="toc-item"><span class="toc-num">5</span> AI Assistant — Chat</div>
+    <div class="toc-item"><span class="toc-num">6</span> Collections — Organize</div>
+    <div class="toc-item"><span class="toc-num">7</span> Recommendations</div>
+    <div class="toc-item"><span class="toc-num">8</span> Reports — Export</div>
+    <div class="toc-item"><span class="toc-num">9</span> Comparison — Compare</div>
+    <div class="toc-item"><span class="toc-num">10</span> Document Analysis</div>
+    <div class="toc-item"><span class="toc-num">11</span> Settings</div>
+  </div>
+
+  <hr class="divider" />
+
+  
+  <p class="section-title">Page 1</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#dbeafe">🏠</div>
+      <div>
+        <h2>Dashboard</h2>
+        <span class="url-badge">/dashboard</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Research ka overview — pehli nazar mein apni progress aur stats dekhne ki jagah.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Kya Dikhai Deta Hai</h3>
+          <ul>
+            <li>Papers collected (total database mein)</li>
+            <li>Saved papers (aapki library)</li>
+            <li>Papers analyzed (processed count)</li>
+            <li>Research activity status</li>
+            <li>Recently saved 5 papers</li>
+            <li>Quick search bar</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Quick Actions</h3>
+          <ul>
+            <li>Search Papers → Explore page</li>
+            <li>My Library → Library page</li>
+            <li>Analytics → Analysis page</li>
+            <li>AI Assistant → Chat page</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Dashboard pe aate hi recently saved papers dekho — kahan tak kaam hua yaad aata hai</li>
+          <li>Quick search bar se directly affective computing topics search karo bina Explore page khole</li>
+          <li>Stats cards se andaza lagao kitne papers save karne baaki hain</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 2</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#dcfce7">🔍</div>
+      <div>
+        <h2>Explore</h2>
+        <span class="url-badge">/explore</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        4 academic databases (arXiv, Semantic Scholar, CrossRef, PubMed) mein ek saath search karo aur papers library mein save karo.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Search Features</h3>
+          <ul>
+            <li>Multi-source parallel search</li>
+            <li>Source filter: arXiv / Semantic Scholar / CrossRef / PubMed / All</li>
+            <li>Year filter: 2024, 2023... ya Before 2018</li>
+            <li>Result limit: 10–50 papers</li>
+            <li>Save search query for future use</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Paper Card Actions</h3>
+          <ul>
+            <li>🔖 Bookmark — Library mein save karo</li>
+            <li>🔗 External link — Original paper open karo</li>
+            <li>Source badge (arXiv, PubMed etc.)</li>
+            <li>Publication year</li>
+            <li>Abstract preview</li>
+          </ul>
+        </div>
+      </div>
+      <div class="prereq-box">
+        <strong>⚠️ Zaroori:</strong> Yahan sirf papers dhundhte hain — actually use karne ke liye pehle Library mein save karna zaroori hai. AI Assistant aur Analysis tabhi kaam karenge.
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Specific keywords use karo — "facial action unit CNN 2023" zyada accurate results deta hai "emotions" se</li>
+          <li>Ek search ko "Save Search" karo taaki baar baar type na karna pade</li>
+          <li>Source filter lagao: arXiv mein latest preprints milte hain, PubMed mein medical/psychology wale</li>
+          <li>Kam se kam 10-15 papers save karo tab Recommendations aur Analysis useful banenge</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 3</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#fef9c3">📚</div>
+      <div>
+        <h2>Library</h2>
+        <span class="url-badge">/library</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Aapki personal research repository — saved papers, uploaded PDFs, aur in-document search teen tabs mein.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Tab 1 — Saved Papers</h3>
+          <ul>
+            <li>Explore se save kiye papers</li>
+            <li>Tags add/remove karo per paper</li>
+            <li>External URL open karo</li>
+            <li>Paper library se hata do</li>
+          </ul>
+          <h3 style="margin-top:12px">Tab 2 — Uploads</h3>
+          <ul>
+            <li>PDF drag-drop ya click-to-upload</li>
+            <li>Processing status (pending → completed)</li>
+            <li>PDF inline preview (sidebar)</li>
+            <li>"Analyse" button → Document Analysis page</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Tab 3 — Search Documents</h3>
+          <ul>
+            <li>Uploaded PDFs ke andar text search</li>
+            <li>Matching excerpts with page numbers</li>
+            <li>Match count per document</li>
+          </ul>
+          <h3 style="margin-top:12px">Tags System</h3>
+          <div class="tag-row" style="margin-top:4px">
+            <span class="tag tag-blue">deep-learning</span>
+            <span class="tag tag-green">emotion</span>
+            <span class="tag tag-purple">survey</span>
+            <span class="tag tag-orange">dataset</span>
+          </div>
+          <p style="font-size:12px;color:#57606a;margin-top:8px">Papers pe custom tags lagao — baad mein filter karne mein help karta hai</p>
+        </div>
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>PDF upload karne ke baad 10-30 sec wait karo — status "completed" ho tab Analyse button kaam karta hai</li>
+          <li>Tags system use karo: "chapter-2", "read", "important" — papers organized rehte hain</li>
+          <li>Search Documents tab se apne uploaded PDFs mein koi specific term dhundh sakte ho (e.g. "LSTM" ya "dataset size")</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 4</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#ede9fe">📊</div>
+      <div>
+        <h2>Analysis</h2>
+        <span class="url-badge">/analysis</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Saved papers ke trends, keyword distribution, aur research gaps AI se automatically identify karo.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Charts Tab</h3>
+          <ul>
+            <li>Publications by Year (line chart)</li>
+            <li>Research Domains (pie chart)</li>
+            <li>Top Keywords (bar chart)</li>
+            <li>Academic Sources breakdown</li>
+            <li>Year range + source filters</li>
+            <li>Keyword frequency cloud</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Research Gaps Tab</h3>
+          <ul>
+            <li>Limitation patterns in papers</li>
+            <li>Underrepresented topics</li>
+            <li>Methodology gaps</li>
+            <li>Emerging topics</li>
+            <li>Evidence strength (Strong/Moderate/Emerging)</li>
+            <li>Supporting paper excerpts</li>
+          </ul>
+        </div>
+      </div>
+      <div class="prereq-box">
+        <strong>⚠️ Zaroori:</strong> Analysis tab useful tabhi hoga jab Library mein kam se kam 5-10 papers saved hon. Khaali library mein sirf empty charts dikhenge.
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Research Gaps tab mein jo gaps milein — unhe AI Assistant mein question ki tarah pucho</li>
+          <li>Year filter se dekho 2020-2024 ke papers mein kon se topics trending hain</li>
+          <li>Keyword cloud se dissertation ke keywords/themes identify karo</li>
+          <li>"Rebuild Index" button tab dabaao jab naye papers save kiye hon aur gaps update nahi hue</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 5</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#fce7f3">🤖</div>
+      <div>
+        <h2>AI Research Assistant</h2>
+        <span class="url-badge">/assistant</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Ollama AI (llama3.2) se apne saved papers ke baare mein questions pucho — citations ke saath jawab milte hain.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Chat Features</h3>
+          <ul>
+            <li>Multi-turn conversation (context yaad rehta hai)</li>
+            <li>Paper citations in responses ([1], [2])</li>
+            <li>Suggested starter questions</li>
+            <li>Conversation history load karo</li>
+            <li>New chat start karo</li>
+            <li>Old conversations delete karo</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Research Context Panel</h3>
+          <ul>
+            <li>Library ke papers checkbox se select karo</li>
+            <li>AI sirf selected papers se answer deta hai</li>
+            <li>Specific paper ke baare mein pucho</li>
+            <li>Ollama status indicator (connected/offline)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="workflow-box">
+        <p class="wf-label">🔮 Powerful Questions Examples</p>
+        <ul style="font-size:13px;color:#4c1d95">
+          <li>"What methodologies are most common in these papers?"</li>
+          <li>"What datasets are used for emotion recognition?"</li>
+          <li>"What are the limitations mentioned in these studies?"</li>
+          <li>"Compare the approaches of these two papers"</li>
+          <li>"What future research directions are suggested?"</li>
+        </ul>
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Context Panel mein specific papers select karo — zyada focused jawab milega</li>
+          <li>Response aane mein 30-60 sec lagta hai (local AI) — patience rakho</li>
+          <li>Ek conversation mein topic change mat karo — naya chat start karo</li>
+          <li>Citations wale papers ko Library mein check karo — original padhne ke kaam aate hain</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 6</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#fef3c7">📁</div>
+      <div>
+        <h2>Collections</h2>
+        <span class="url-badge">/collections</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Papers ko topic-wise groups mein organize karo aur har collection ka separately AI analysis karo.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Collection Management</h3>
+          <ul>
+            <li>New collection banao (name + description)</li>
+            <li>Color coding per collection</li>
+            <li>Paper count badge</li>
+            <li>Collection delete karo</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Collection Detail</h3>
+          <ul>
+            <li>Papers tab — papers add/remove karo</li>
+            <li>Analysis tab — collection-specific gap analysis</li>
+            <li>Library se papers add karo (dropdown)</li>
+            <li>Analysis refresh karo</li>
+          </ul>
+        </div>
+      </div>
+      <div class="workflow-box">
+        <p class="wf-label">📌 Collection Ideas for Research</p>
+        <ul style="font-size:13px;color:#4c1d95">
+          <li>"Chapter 2 — Literature Review" → saare survey papers</li>
+          <li>"Facial Expression Recognition" → topic-specific papers</li>
+          <li>"To Read Later" → pending papers</li>
+          <li>"High Priority" → most relevant papers</li>
+        </ul>
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Dissertation chapters ke hisaab se collections banao — organized rehta hai</li>
+          <li>Analysis tab mein collection-specific gaps milte hain — chapter-level research gap identify hoti hai</li>
+          <li>Ek paper multiple collections mein ho sakta hai</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 7</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#d1fae5">⭐</div>
+      <div>
+        <h2>Recommendations</h2>
+        <span class="url-badge">/recommendations</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Aapki library dekh ke AI similar papers suggest karta hai jo aapne miss kiye honge — match % ke saath.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>What You See</h3>
+          <ul>
+            <li>Paper title + authors</li>
+            <li>Match % score (e.g. 87% match)</li>
+            <li>Reason: "Shares keywords: CNN, emotion"</li>
+            <li>Source + publication year</li>
+            <li>External link to paper</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Actions</h3>
+          <ul>
+            <li>Save — directly library mein add karo</li>
+            <li>External link — original paper dekho</li>
+            <li>Already saved = green "Saved" badge</li>
+          </ul>
+        </div>
+      </div>
+      <div class="prereq-box">
+        <strong>⚠️ Zaroori:</strong> Library mein kam se kam 3-5 papers hone chahiye recommendations dekhne ke liye. Naye account pe empty rahega.
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>High match % wale papers pehle dekho — sabse relevant honge</li>
+          <li>Reason text padhne se samajh aata hai kyun suggest kiya — ignore mat karo</li>
+          <li>Zyada papers save karoge → Recommendations better hongi (algorithm Jaccard similarity use karta hai)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 8</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#fee2e2">📄</div>
+      <div>
+        <h2>Reports</h2>
+        <span class="url-badge">/reports</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Research analysis ke exportable reports generate karo — PDF, DOCX, CSV, BibTeX formats mein.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Report Types</h3>
+          <ul>
+            <li>📊 Library Summary — saari saved papers ka overview</li>
+            <li>📈 Trend Analysis — publication trends over years</li>
+            <li>⚖️ Paper Comparison — multiple papers compare</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Export Formats</h3>
+          <ul>
+            <li>PDF — professional document</li>
+            <li>DOCX — Word mein edit ho sake</li>
+            <li>CSV — spreadsheet analysis</li>
+            <li>JSON — programmatic use</li>
+            <li>BibTeX — citation managers (Zotero/Mendeley)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>BibTeX format download karo — Zotero/Overleaf/LaTeX mein directly import ho jaata hai</li>
+          <li>Supervisor ko Library Summary PDF bhejna ho toh yahan se generate karo</li>
+          <li>CSV download karo — Excel mein khud se charts bana sakte ho</li>
+          <li>Report generate hone mein 10-30 sec lagta hai — status "Ready" hone ka wait karo</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 9</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#e0f2fe">⚖️</div>
+      <div>
+        <h2>Comparison</h2>
+        <span class="url-badge">/comparison</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        2 se 4 papers ko AI embeddings se semantically compare karo — similarity scores aur evidence excerpts ke saath.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>How It Works</h3>
+          <ul>
+            <li>Library se 2–4 papers select karo (checkboxes)</li>
+            <li>"Compare" button dabao</li>
+            <li>AI FAISS similarity calculate karta hai</li>
+            <li>Individual relevance score milta hai</li>
+            <li>Pairwise comparison table</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Results</h3>
+          <ul>
+            <li>Per-paper relevance % + label (High/Moderate/Low)</li>
+            <li>Progress bar visualization</li>
+            <li>Paper A vs Paper B similarity score</li>
+            <li>Evidence excerpts from both</li>
+            <li>External links</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Dissertation mein cite karne wale papers compare karo — high similarity = overlapping content, cite karna zaroori</li>
+          <li>Do methodologies compare karo (e.g. CNN paper vs Transformer paper) — differences identify hote hain</li>
+          <li>Low similarity (under 40%) = papers alag domains cover karte hain — broader literature review ke liye better</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 10</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#f0fdf4">🔬</div>
+      <div>
+        <h2>Document Analysis</h2>
+        <span class="url-badge">/document-analysis/:id</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Uploaded PDF ka deep analysis — keywords, page distribution, sections, aur key sentences charts ke saath.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Stats Cards</h3>
+          <ul>
+            <li>Total pages</li>
+            <li>Total word count</li>
+            <li>Text chunks count</li>
+            <li>Unique keywords</li>
+          </ul>
+          <h3 style="margin-top:12px">Charts</h3>
+          <ul>
+            <li>Top Keywords bar chart</li>
+            <li>Section Distribution pie chart</li>
+            <li>Words per Page line chart</li>
+            <li>Chunks per Page bar chart</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Keyword Cloud</h3>
+          <ul>
+            <li>Scalable keyword tags</li>
+            <li>Frequency counts</li>
+          </ul>
+          <h3 style="margin-top:12px">Key Sentences</h3>
+          <ul>
+            <li>Most information-dense sentences</li>
+            <li>Page number + section badges</li>
+            <li>Color-coded by position</li>
+          </ul>
+        </div>
+      </div>
+      <div class="prereq-box">
+        <strong>⚠️ Kaise Pahunche:</strong> Library → Uploads tab → Completed document → "Analyse" button click karo.
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Key Sentences section — paper ka quick summary samjhne ke liye best, poora padhne ki zaroorat nahi</li>
+          <li>Words per Page chart se dense sections identify karo (methodology/results wale pages zyada words wale hote hain)</li>
+          <li>Keyword cloud se apne research keywords validate karo — paper mein actually kaun se terms prominent hain</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <p class="section-title">Page 11</p>
+  <div class="page-card">
+    <div class="page-card-header">
+      <div class="page-icon" style="background:#f1f5f9">⚙️</div>
+      <div>
+        <h2>Settings</h2>
+        <span class="url-badge">/settings</span>
+      </div>
+    </div>
+    <div class="page-card-body">
+      <div class="purpose-box">
+        Account settings, password change, theme toggle, aur system information ek jagah.
+      </div>
+      <div class="two-col">
+        <div>
+          <h3>Account</h3>
+          <ul>
+            <li>Name, email (read-only)</li>
+            <li>Account status</li>
+            <li>Change Password (current + new)</li>
+          </ul>
+          <h3 style="margin-top:12px">Appearance</h3>
+          <ul>
+            <li>Dark / Light mode toggle</li>
+          </ul>
+        </div>
+        <div>
+          <h3>System Info</h3>
+          <ul>
+            <li>AI backend: Ollama + llama3.2</li>
+            <li>Embeddings: all-MiniLM-L6-v2</li>
+            <li>Vector index: FAISS</li>
+            <li>Academic sources connected</li>
+            <li>Data privacy info</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip-box">
+        <p class="tip-label">✅ Best Use Tips</p>
+        <ul>
+          <li>Password change karte waqt minimum 8 characters zaroori hai</li>
+          <li>System Info tab mein check karo AI backend connected hai ya nahi — agar Ollama offline hai toh Assistant kaam nahi karega</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  
+  <hr class="divider" />
+  <p class="section-title">Quick Reference</p>
+  <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead>
+      <tr style="background:#f7f8fa">
+        <th style="padding:10px 12px;text-align:left;border:1px solid #e5e7eb;color:#57606a">#</th>
+        <th style="padding:10px 12px;text-align:left;border:1px solid #e5e7eb;color:#57606a">Page</th>
+        <th style="padding:10px 12px;text-align:left;border:1px solid #e5e7eb;color:#57606a">Main Use</th>
+        <th style="padding:10px 12px;text-align:left;border:1px solid #e5e7eb;color:#57606a">Prerequisite</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding:8px 12px;border:1px solid #e5e7eb">1</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Dashboard</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Overview + quick navigation</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">Login</td></tr>
+      <tr style="background:#f7f8fa"><td style="padding:8px 12px;border:1px solid #e5e7eb">2</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Explore</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Papers dhundho + save karo</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">Login</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #e5e7eb">3</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Library</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Papers manage + PDF upload</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">Papers saved hone chahiye</td></tr>
+      <tr style="background:#f7f8fa"><td style="padding:8px 12px;border:1px solid #e5e7eb">4</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Analysis</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Trends + research gaps</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">5+ papers saved</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #e5e7eb">5</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">AI Assistant</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Papers ke baare mein questions</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">Papers saved + Ollama running</td></tr>
+      <tr style="background:#f7f8fa"><td style="padding:8px 12px;border:1px solid #e5e7eb">6</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Collections</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Papers groups mein organize</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">Papers saved hone chahiye</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #e5e7eb">7</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Recommendations</td><td style="padding:8px 12px;border:1px solid #e5e7eb">AI suggestions</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">3+ papers saved</td></tr>
+      <tr style="background:#f7f8fa"><td style="padding:8px 12px;border:1px solid #e5e7eb">8</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Reports</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Export PDF/DOCX/BibTeX</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">Papers saved hone chahiye</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #e5e7eb">9</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Comparison</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Papers compare karo</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">2+ papers saved</td></tr>
+      <tr style="background:#f7f8fa"><td style="padding:8px 12px;border:1px solid #e5e7eb">10</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Doc Analysis</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Uploaded PDF ka deep analysis</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">PDF uploaded + completed</td></tr>
+      <tr><td style="padding:8px 12px;border:1px solid #e5e7eb">11</td><td style="padding:8px 12px;border:1px solid #e5e7eb;font-weight:600">Settings</td><td style="padding:8px 12px;border:1px solid #e5e7eb">Account + preferences</td><td style="padding:8px 12px;border:1px solid #e5e7eb;color:#57606a">Login</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    Made with IBM Bob  ·  ARIS v1.0  ·  Affective Research Intelligence System  ·  2026
+  </div>
+
+</div>
+</body>
+</html>
